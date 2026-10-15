@@ -16,11 +16,14 @@
 
 ### SUBMITTED BY:
 **SHASHANK M T**  
-**UUCMS Register Number**: `U01BH25C0174`
+**UUCMS Register Number**: `U01BH25C0174`  
+**Semester & Course**: 3rd Semester, 2nd Year BCA(AI)
 
 ### UNDER THE GUIDANCE OF:
-**Faculty of Computer Science & Artificial Intelligence**  
-**Pooja Bhagavat Mahajana First Grade College, Mysuru**
+**RAGUNANDAN B**  
+**Guest Lecturer – Introduction to Machine Learning**  
+Department of Computer Science & AI  
+Pooja Bhagavat Mahajana First Grade College, Mysuru
 
 **Academic Year**: 2026 – 2027  
 **Date of Submission**: October 15, 2026  
@@ -33,16 +36,16 @@
 
 ## CERTIFICATE
 
-This is to certify that the project report entitled **"EIGEN FACES: Implementation of 'Eigenfaces for Recognition' (Turk & Pentland, 1991) Technical Paper Using Python"** is a bonafide work carried out by **SHASHANK M T** (UUCMS No: **U01BH25C0174**), a student of Bachelor of Computer Applications in Artificial Intelligence **[BCA(AI)]**, at **Pooja Bhagavat Mahajana First Grade College, Mysuru**, in partial fulfillment of the academic curriculum for the subject **Machine Learning** during the academic year 2026–2027.
+This is to certify that the project report entitled **"EIGEN FACES: Implementation of 'Eigenfaces for Recognition' (Turk & Pentland, 1991) Technical Paper Using Python"** is a bonafide work carried out by **SHASHANK M T** (UUCMS No: **U01BH25C0174**), a student of Bachelor of Computer Applications in Artificial Intelligence **[BCA(AI)]** (3rd Semester, 2nd Year), at **Pooja Bhagavat Mahajana First Grade College, Mysuru**, in partial fulfillment of the academic curriculum for the subject **Machine Learning** during the academic year 2026–2027.
 
 The project implementation, mathematical derivations, automated unit tests, and empirical analyses documented in this report have been independently developed, executed, and verified under academic supervision.
 
 <br><br><br>
 
 _________________________ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; _________________________  
-**Internal Project Guide** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Head of Department (HOD)**  
-Department of Computer Science & AI &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Department of Computer Science & AI  
-PBM FGC, Mysuru &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PBM FGC, Mysuru  
+**Ragunandan B** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Head of Department (HOD)**  
+Guest Lecturer – Intro to ML (Internal Guide) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Department of Computer Science & AI  
+Dept. of CS & AI, PBM FGC &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PBM FGC, Mysuru  
 
 <br><br>
 
@@ -56,7 +59,7 @@ PBM FGC, Mysuru
 
 ## DECLARATION
 
-I, **SHASHANK M T**, student of Bachelor of Computer Applications in Artificial Intelligence [BCA(AI)], bearing UUCMS Register Number **U01BH25C0174**, hereby declare that the project report entitled **"EIGEN FACES: Implementation of 'Eigenfaces for Recognition' (Turk & Pentland, 1991) Technical Paper Using Python"** submitted to **Pooja Bhagavat Mahajana First Grade College, Mysuru**, is an authentic record of independent technical work carried out by me under academic guidance.
+I, **SHASHANK M T**, student of 3rd Semester, 2nd Year Bachelor of Computer Applications in Artificial Intelligence [BCA(AI)], bearing UUCMS Register Number **U01BH25C0174**, hereby declare that the project report entitled **"EIGEN FACES: Implementation of 'Eigenfaces for Recognition' (Turk & Pentland, 1991) Technical Paper Using Python"** submitted to **Pooja Bhagavat Mahajana First Grade College, Mysuru**, is an authentic record of independent technical work carried out by me under academic guidance.
 
 I further declare that this implementation adheres to the mathematical formulations set forth in the research literature and has not been submitted previously to any other university or institution for the award of any degree, diploma, or certificate.
 
@@ -72,7 +75,7 @@ All external libraries, benchmark datasets, and literature sources consulted hav
 _________________________  
 **SHASHANK M T**  
 UUCMS No.: `U01BH25C0174`  
-Course: BCA(AI)  
+Course: BCA(AI), 3rd Semester, 2nd Year  
 
 ---
 
@@ -86,7 +89,7 @@ First and foremost, I express my sincere gratitude to our respected **Principal*
 
 I extend my heartfelt thanks to the **Head of the Department (HOD)**, Department of Computer Science & Artificial Intelligence, for their constant encouragement, organizational oversight, and valuable suggestions throughout the curriculum.
 
-I express my deepest sense of gratitude to my **Internal Project Guide** and faculty members of Machine Learning and Computer Vision for their constructive criticism, intellectual guidance, and detailed reviews during the development of this project.
+I place on record my heartfelt gratitude and sincere indebtedness to my course lecturer and project guide, **Mr. Ragunandan B**, Guest Lecturer – Introduction to Machine Learning, Department of Computer Science & Artificial Intelligence. His inspiring lectures, lucid explanations of linear algebra and machine learning concepts, constructive reviews of mathematical derivations, and technical guidance were instrumental in the successful completion of this project implementation.
 
 I also place on record my sincere appreciation to the authors of the original research paper, **Matthew A. Turk and Alex P. Pentland**, whose foundational work at the Massachusetts Institute of Technology (MIT) continues to inspire generations of computer vision and machine learning researchers.
 
@@ -95,7 +98,7 @@ Finally, I convey my heartfelt thanks to my family, peers, and friends whose unw
 <br>
 
 **SHASHANK M T**  
-BCA(AI) | UUCMS No: `U01BH25C0174`  
+BCA(AI), 3rd Semester (2nd Year) | UUCMS No: `U01BH25C0174`  
 
 ---
 
@@ -1072,7 +1075,7 @@ To facilitate academic verification and review by the project examination commit
 |                                                                         |
 | Student Name : SHASHANK M T                                             |
 | UUCMS Number : U01BH25C0174                                             |
-| Degree       : Bachelor of Computer Applications (AI) - BCA(AI)         |
+| Degree       : Bachelor of Computer Applications (AI) - BCA(AI) (3rd Sem, 2nd Year) |
 | Subject      : Machine Learning                                         |
 | Institution  : Pooja Bhagavat Mahajana First Grade College, Mysuru      |
 | Date         : October 15, 2026                                         |

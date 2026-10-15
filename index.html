@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eigenfaces for Recognition — Project & Code Showcase</title>
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --border-color: #e2e8f0;
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --accent: #0f766e;
+      --code-bg: #0f172a;
+      --code-text: #e2e8f0;
+      --keyword: #38bdf8;
+      --func: #fbbf24;
+      --string: #4ade80;
+      --comment: #94a3b8;
+      --number: #f472b6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Header & Navigation */
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-main);
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      background: var(--primary);
+      color: white;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .brand-text h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .brand-text span {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .nav-btn {
+      text-decoration: none;
+      padding: 8px 16px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .nav-btn-outline {
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      background: #ffffff;
+    }
+    .nav-btn-outline:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    .nav-btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+    }
+    .nav-btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    /* Hero / Student Banner */
+    .hero-card {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: white;
+      border-radius: 14px;
+      padding: 36px 40px;
+      margin: 30px 0;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);
+    }
+
+    .badge-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .badge-blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .badge-green { background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
+    .badge-amber { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+
+    .hero-title {
+      font-size: 2.1rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+
+    .hero-subtitle {
+      font-size: 1.05rem;
+      color: #94a3b8;
+      max-width: 800px;
+      margin-bottom: 24px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .meta-item strong {
+      display: block;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      margin-bottom: 3px;
+    }
+
+    .meta-item span {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #f8fafc;
+    }
+
+    /* Section Cards */
+    .section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 28px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+
+    .section-header {
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-subtitle {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Quickstart command box */
+    .command-box {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 16px 20px;
+      border-radius: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.95rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 15px 0;
+    }
+
+    .command-box code {
+      color: #38bdf8;
+    }
+
+    /* Algorithm Walkthrough Cards */
+    .step-card {
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      margin-bottom: 22px;
+      overflow: hidden;
+      background: #ffffff;
+    }
+
+    .step-header {
+      background: #f1f5f9;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .step-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.82rem;
+      font-weight: bold;
+    }
+
+    .step-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .step-formula {
+      font-family: ui-monospace, monospace;
+      font-size: 0.82rem;
+      background: #e2e8f0;
+      padding: 4px 10px;
+      border-radius: 5px;
+      color: #334155;
+    }
+
+    .step-body {
+      padding: 20px;
+    }
+
+    .step-desc {
+      font-size: 0.92rem;
+      color: #334155;
+      margin-bottom: 14px;
+    }
+
+    /* Code Block */
+    .code-container {
+      background: var(--code-bg);
+      border-radius: 8px;
+      overflow-x: auto;
+      padding: 16px 20px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      color: var(--code-text);
+      margin-bottom: 12px;
+    }
+
+    .kw { color: var(--keyword); font-weight: bold; }
+    .fn { color: var(--func); }
+    .str { color: var(--string); }
+    .cmt { color: var(--comment); font-style: italic; }
+    .num { color: var(--number); }
+
+    .viva-box {
+      background: #eff6ff;
+      border-left: 4px solid var(--primary);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.86rem;
+      color: #1e3a8a;
+      margin-top: 10px;
+    }
+
+    .viva-box strong {
+      color: #1d4ed8;
+    }
+
+    /* Gallery Grid */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .gallery-item {
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+      background: #000;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .gallery-caption {
+      padding: 14px 16px;
+    }
+
+    .gallery-caption h4 {
+      font-size: 0.98rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .gallery-caption p {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* Terminal Window */
+    .terminal {
+      background: #0f172a;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: #e2e8f0;
+      font-size: 0.86rem;
+      line-height: 1.5;
+    }
+
+    .terminal-header {
+      background: #1e293b;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #334155;
+    }
+
+    .t-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .t-red { background: #ef4444; }
+    .t-yellow { background: #eab308; }
+    .t-green { background: #22c55e; }
+
+    .t-title {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin-left: 8px;
+    }
+
+    .terminal-body {
+      padding: 20px;
+      overflow-x: auto;
+      max-height: 480px;
+      overflow-y: auto;
+    }
+
+    .t-prompt { color: #38bdf8; }
+    .t-success { color: #4ade80; }
+    .t-warn { color: #fbbf24; }
+    .t-highlight { color: #f43f5e; font-weight: bold; }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 50px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-color);
+      padding-top: 25px;
+    }
+
+    .qr-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 20px 0;
+    }
+
+    .qr-container img {
+      width: 90px;
+      height: 90px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+    }
+
+    @media (max-width: 768px) {
+      .hero-card { padding: 24px 20px; }
+      .hero-title { font-size: 1.6rem; }
+      .meta-grid { grid-template-columns: 1fr; }
+      .header-content { flex-direction: column; gap: 12px; align-items: flex-start; }
+      .nav-links { width: 100%; justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Sticky Navigation -->
+  <header>
+    <div class="container header-content">
+      <a href="#" class="brand">
+        <div class="brand-icon">&Psi;</div>
+        <div class="brand-text">
+          <h1>Eigenfaces for Recognition</h1>
+          <span>Turk & Pentland (1991) &bull; Python Implementation</span>
+        </div>
+      </a>
+      <div class="nav-links">
+        <a href="#quickstart" class="nav-btn nav-btn-outline">Quickstart</a>
+        <a href="#code" class="nav-btn nav-btn-outline">Algorithm Code</a>
+        <a href="#graphs" class="nav-btn nav-btn-outline">Results &amp; Graphs</a>
+        <a href="REPORT.html" target="_blank" class="nav-btn nav-btn-outline">Report</a>
+        <a href="slides.html" target="_blank" class="nav-btn nav-btn-primary">Presentation Slides</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- Hero / Student Credentials Card -->
+    <div class="hero-card">
+      <div class="badge-bar">
+        <span class="badge badge-blue">Machine Learning Project</span>
+        <span class="badge badge-green">3rd Semester, 2nd Year BCA(AI)</span>
+        <span class="badge badge-amber">Turk &amp; Pentland (1991)</span>
+      </div>
+
+      <h2 class="hero-title">Eigen Faces for Recognition</h2>
+      <p class="hero-subtitle">
+        An appearance-based facial recognition engine implemented from scratch in pure Python and NumPy, utilizing Principal Component Analysis (PCA) and the Turk-Pentland dimensionality reduction trick.
+      </p>
+
+      <div class="meta-grid">
+        <div class="meta-item">
+          <strong>Student Name</strong>
+          <span>Shashank M T</span>
+        </div>
+        <div class="meta-item">
+          <strong>UUCMS Register Number</strong>
+          <span>U01BH25C0174</span>
+        </div>
+        <div class="meta-item">
+          <strong>Course &amp; Semester</strong>
+          <span>BCA(AI), 3rd Sem (2nd Year)</span>
+        </div>
+        <div class="meta-item">
+          <strong>Course Lecturer / Guide</strong>
+          <span>Ragunandan B</span>
+        </div>
+        <div class="meta-item">
+          <strong>College / Institution</strong>
+          <span>Pooja Bhagavat Mahajana First Grade College</span>
+        </div>
+        <div class="meta-item">
+          <strong>Submission Date</strong>
+          <span>October 15, 2026</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quickstart Execution Card -->
+    <div class="section-card" id="quickstart">
+      <div class="section-header">
+        <h3 class="section-title">1. How to Run the Project</h3>
+        <p class="section-subtitle">The entire implementation is packaged into a single, standalone Python file with zero complex setup.</p>
+      </div>
+
+      <p style="font-size: 0.95rem; margin-bottom: 10px;">
+        To execute the full algorithm, train the model, evaluate benchmark recognition accuracy, and validate the 4-way decision framework, open your terminal and run:
+      </p>
+
+      <div class="command-box">
+        <span>$ <code>python3 main.py</code></span>
+        <span style="color: #94a3b8; font-size: 0.8rem;">Runs standalone pipeline</span>
+      </div>
+
+      <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px 18px; margin-top: 14px; font-size: 0.88rem;">
+        <strong>Project Structure:</strong>
+        <ul style="margin-left: 20px; margin-top: 6px; color: var(--text-muted);">
+          <li><code>main.py</code> : Contains all mathematical algorithms, PCA formulation, and demonstration logic.</li>
+          <li><code>data/olivetti_py3.pkz</code> : The bundled AT&T / Olivetti benchmark dataset (400 face photos, 40 subjects).</li>
+          <li><code>index.html</code> : This interactive code and results showcase document.</li>
+          <li><code>REPORT.html</code> : Formal, black-and-white university submission report with certificates.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Terminal Output Card -->
+    <div class="section-card">
+      <div class="section-header">
+        <h3 class="section-title">2. Live Console Output</h3>
+        <p class="section-subtitle">Real execution telemetry produced by running <code>python3 main.py</code> on the Olivetti database.</p>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-header">
+          <div class="t-dot t-red"></div>
+          <div class="t-dot t-yellow"></div>
+          <div class="t-dot t-green"></div>
+          <div class="t-title">shashank@macbook: ~/balls/eigen_faces &mdash; python3 main.py</div>
+        </div>
+        <div class="terminal-body">
+<pre><span class="t-prompt">============================================================================</span>
+  <span class="t-success">EIGEN FACES FOR RECOGNITION (Turk & Pentland, 1991)</span>
+<span class="t-prompt">============================================================================</span>
+  Student Name : Shashank M T
+  UUCMS No.    : U01BH25C0174
+  Course       : BCA(AI), 3rd Semester, 2nd Year
+  Subject      : Machine Learning
+  College      : Pooja Bhagavat Mahajana First Grade College, Mysuru
+  Guide        : Ragunandan B (Guest Lecturer – Introduction to Machine Learning)
+  GitHub Repo  : https://github.com/shashank-emty/Eigen-faces
+<span class="t-prompt">============================================================================</span>
+
+<span class="t-prompt">[STEP 1] Loading Face Dataset...</span>
+  [+] Enrolled Training Gallery : 245 images (35 subjects x 7 photos)
+  [+] Known Test Probes         : 105 images (35 subjects x 3 photos)
+  [+] Unseen Unknown Probes     : 50 images (5 subjects x 10 photos)
+  [+] Image Resolution          : 64 x 64 pixels (Pixel dimension D = 4096)
+
+<span class="t-prompt">[STEP 2] Training Eigenfaces Model with K = 40 components...</span>
+  [+] Average Face (Psi) Shape  : (4096,)
+  [+] Covariance Reduction      : (4096 x 4096 = 16.7M) -&gt; (245 x 245 = 60,025)
+  [+] Subspace Dimension (K)    : 40 eigenfaces
+  [+] Explained Variance Ratio  : <span class="t-success">86.33% of total dataset variance</span>
+  [+] Calibrated Theta_Face     : 7.884 (DFFS Threshold)
+  [+] Calibrated Theta_Class    : 6.463 (DIFS Threshold)
+
+<span class="t-prompt">[STEP 3] Evaluating Top-1 Identification Accuracy on Known Probes...</span>
+  [+] Correctly Identified      : 90 / 105
+  [+] <span class="t-success">Top-1 Recognition Accuracy: 85.71%</span>
+  [+] Mean Reconstruction Error : 3.847
+
+<span class="t-prompt">[STEP 4] Validating 4-Way Decision Rule (Turk & Pentland Section 3.2):</span>
+
+  A. Known Subject Probe (Subject 0):
+     * eps_d = 4.729 (Threshold theta_f = 7.884)
+     * eps_c = 5.651 (Threshold theta_c = 6.463)
+     * Decision -&gt; <span class="t-success">[KNOWN_FACE]</span>: Recognized as Subject 0 (eps_c=5.65 &lt; theta_c=6.46)
+
+  B. Unseen Subject Probe (Subject 36 - never in training set):
+     * eps_d = 6.227 (Threshold theta_f = 7.884)
+     * eps_c = 7.452 (Threshold theta_c = 6.463)
+     * Decision -&gt; <span class="t-warn">[UNKNOWN_FACE]</span>: Detected new human face (eps_c=7.45 &gt;= theta_c=6.46). Ready for enrollment.
+
+  C. Non-Face Pattern (Geometric Checkerboard):
+     * eps_d = 32.079 (Threshold theta_f = 7.884)
+     * eps_c = 5.263 (Threshold theta_c = 6.463)
+     * Decision -&gt; <span class="t-highlight">[NOT_A_FACE]</span>: Rejection: Distance from Face Space (eps_d=32.08) &gt;= theta_f (7.88)
+
+<span class="t-prompt">============================================================================</span>
+  <span class="t-success">PROJECT EXECUTION COMPLETED SUCCESSFULLY!</span>
+  Summary: Top-1 Accuracy = 85.71%, Compression = 99.02%
+<span class="t-prompt">============================================================================</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step-by-Step Code & Mathematical Algorithm Showcase -->
+    <div class="section-card" id="code">
+      <div class="section-header">
+        <h3 class="section-title">3. Algorithmic Code Walkthrough (From Scratch)</h3>
+        <p class="section-subtitle">Line-by-line breakdown of the Python code in <code>main.py</code> alongside the original mathematical derivations.</p>
+      </div>
+
+      <!-- STEP 1 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title-wrap">
+            <div class="step-num">1</div>
+            <div class="step-title">Vectorization &amp; Average Face Calculation</div>
+          </div>
+          <div class="step-formula">&Psi; = (1 / M) &Sigma; &Gamma;<sub>i</sub></div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">
+            Each 2D facial image of size $N \times N$ ($64 \times 64$) is unrolled row-by-row into a high-dimensional vector $\Gamma_i \in \mathbb{R}^D$ where $D = 4096$. We compute the universal Mean Face $\Psi$, which acts as the common human baseline.
+          </p>
+          <div class="code-container">
+<span class="cmt"># 1. Reshape images to column vectors Gamma of shape (D, M)</span>
+Gamma = X_train.reshape(M, D).T  <span class="cmt"># (4096, 245)</span>
+
+<span class="cmt"># 2. Compute Mean Face Vector Psi</span>
+self.mean_face = np.<span class="fn">mean</span>(Gamma, axis=<span class="num">1</span>)  <span class="cmt"># Shape: (4096,)</span>
+          </div>
+          <div class="viva-box">
+            <strong>Viva / Evaluation Tip:</strong> Why subtract the mean face? Subtracting $\Psi$ centers the dataset around the origin ($\mathbf{0}$), ensuring that PCA discovers the directions of <em>maximum variation between individuals</em> rather than common facial features.
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title-wrap">
+            <div class="step-num">2</div>
+            <div class="step-title">Mean-Centering &amp; Difference Matrix</div>
+          </div>
+          <div class="step-formula">&Phi;<sub>i</sub> = &Gamma;<sub>i</sub> - &Psi; &emsp; A = [&Phi;<sub>1</sub>, &hellip;, &Phi;<sub>M</sub>]</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">
+            Subtracting $\Psi$ from each face gives the difference vector $\Phi_i$. Packing all $M$ difference vectors side-by-side produces the difference matrix $A \in \mathbb{R}^{D \times M}$.
+          </p>
+          <div class="code-container">
+<span class="cmt"># Mean-center difference matrix A of shape (D, M)</span>
+A = Gamma - self.mean_face[:, np.newaxis]  <span class="cmt"># (4096, 245)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title-wrap">
+            <div class="step-num">3</div>
+            <div class="step-title">The Turk-Pentland Covariance Reduction Trick</div>
+          </div>
+          <div class="step-formula">L = A<sup>T</sup>A &isin; &reals;<sup>M &times; M</sup> &emsp; (instead of C = AA<sup>T</sup> &isin; &reals;<sup>D &times; D</sup>)</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">
+            The full pixel covariance matrix $C = \frac{1}{M} A A^T$ has dimensions $4096 \times 4096 = 16,777,216$ elements, which is computationally intractable. Turk &amp; Pentland proved that the eigenvectors of $C$ can be found by decomposing the surrogate matrix $L = A^T A$ of size $245 \times 245 = 60,025$ elements (a $279\times$ reduction!).
+          </p>
+          <div class="code-container">
+<span class="cmt"># Compute surrogate covariance matrix L of size (M x M)</span>
+L = np.<span class="fn">dot</span>(A.T, A)  <span class="cmt"># Shape: (245, 245)</span>
+
+<span class="cmt"># Solve for surrogate eigenvectors v_k: L * v_k = mu_k * v_k</span>
+eigenvalues, eigenvectors = np.linalg.<span class="fn">eigh</span>(L)
+
+<span class="cmt"># Sort in descending order</span>
+idx = np.<span class="fn">argsort</span>(eigenvalues)[::-<span class="num">1</span>]
+eigenvalues = eigenvalues[idx]
+top_eigenvectors_v = eigenvectors[:, idx[:K]]  <span class="cmt"># (245, K)</span>
+          </div>
+          <div class="viva-box">
+            <strong>The Mathematical Proof:</strong> If $L v_k = \mu_k v_k$, multiplying both sides by $A$ gives $A(A^T A v_k) = \mu_k(A v_k) \implies (A A^T)(A v_k) = \mu_k (A v_k)$. Hence, $u_k = A v_k$ is an exact eigenvector of the true covariance matrix $C$!
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title-wrap">
+            <div class="step-num">4</div>
+            <div class="step-title">Recovering True Eigenfaces &amp; L2 Normalization</div>
+          </div>
+          <div class="step-formula">u<sub>k</sub> = (A v<sub>k</sub>) / ||A v<sub>k</sub>||<sub>2</sub></div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">
+            Multiplying matrix $A$ by each surrogate eigenvector $v_k$ recovers the true 4096-dimensional eigenface vector $u_k$. Normalizing ensures that the basis vectors form an orthonormal subspace ($u_i^T u_j = \delta_{ij}$).
+          </p>
+          <div class="code-container">
+<span class="cmt"># Map surrogate eigenvectors back to full pixel space</span>
+U = np.<span class="fn">dot</span>(A, top_eigenvectors_v)  <span class="cmt"># Shape: (4096, K)</span>
+
+<span class="cmt"># Normalize each column vector to unit L2 norm</span>
+norms = np.linalg.<span class="fn">norm</span>(U, axis=<span class="num">0</span>, keepdims=<span class="kw">True</span>)
+self.eigenfaces = U / norms  <span class="cmt"># Shape: (4096, K)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 5 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title-wrap">
+            <div class="step-num">5</div>
+            <div class="step-title">Face Subspace Projection &amp; Reconstruction</div>
+          </div>
+          <div class="step-formula">&Omega; = U<sup>T</sup>( &Gamma; - &Psi; ) &emsp; &Gamma;<sub>hat</sub> = &Psi; + U &Omega;</div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">
+            Any facial image is projected into Face Space by taking its dot product with the eigenfaces, compressing $4096$ raw pixel values into just $K=40$ scalar weights $\Omega = [\omega_1, \dots, \omega_K]^T$.
+          </p>
+          <div class="code-container">
+<span class="kw">def</span> <span class="fn">project</span>(self, image: np.ndarray) -&gt; np.ndarray:
+    <span class="cmt"># Compresses 4096 pixels into K coordinates</span>
+    phi = image.<span class="fn">flatten</span>() - self.mean_face
+    <span class="kw">return</span> np.<span class="fn">dot</span>(self.eigenfaces.T, phi)  <span class="cmt"># Shape: (K,)</span>
+
+<span class="kw">def</span> <span class="fn">reconstruct</span>(self, omega: np.ndarray) -&gt; np.ndarray:
+    <span class="cmt"># Reconstructs full 4096-D image from K coordinates</span>
+    <span class="kw">return</span> self.mean_face + np.<span class="fn">dot</span>(self.eigenfaces, omega)
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 6 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-title-wrap">
+            <div class="step-num">6</div>
+            <div class="step-title">The 4-Way Decision Rule (Two Thresholds)</div>
+          </div>
+          <div class="step-formula">&epsilon;<sub>d</sub> (DFFS) vs &theta;<sub>f</sub> &emsp; &epsilon;<sub>c</sub> (DIFS) vs &theta;<sub>c</sub></div>
+        </div>
+        <div class="step-body">
+          <p class="step-desc">
+            Turk and Pentland formulated two distinct distance measures to make recognition robust against non-faces and unseen subjects:
+          </p>
+          <div class="code-container">
+<span class="kw">def</span> <span class="fn">predict</span>(self, image: np.ndarray) -&gt; dict:
+    eps_d, eps_c, predicted_label = self.<span class="fn">compute_distances</span>(image)
+
+    <span class="cmt"># Case 1: Distance from face space exceeds threshold -&gt; NOT A FACE</span>
+    <span class="kw">if</span> eps_d &gt;= self.theta_f:
+        <span class="kw">return</span> {<span class="str">"decision"</span>: <span class="str">"NOT_A_FACE"</span>}
+
+    <span class="cmt"># Case 2: Near face space and near known centroid -&gt; KNOWN FACE</span>
+    <span class="kw">elif</span> eps_c &lt; self.theta_c:
+        <span class="kw">return</span> {<span class="str">"decision"</span>: <span class="str">"KNOWN_FACE"</span>, <span class="str">"label"</span>: predicted_label}
+
+    <span class="cmt"># Case 3: Near face space but far from all centroids -&gt; UNKNOWN FACE</span>
+    <span class="kw">else</span>:
+        <span class="kw">return</span> {<span class="str">"decision"</span>: <span class="str">"UNKNOWN_FACE"</span>}
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Visual Results & Graphs Gallery -->
+    <div class="section-card" id="graphs">
+      <div class="section-header">
+        <h3 class="section-title">4. Experimental Results &amp; Graphs</h3>
+        <p class="section-subtitle">Visual and quantitative evaluation produced on the 400-face Olivetti benchmark dataset.</p>
+      </div>
+
+      <div class="gallery-grid">
+
+        <!-- FIG 1 -->
+        <div class="gallery-item">
+          <img src="results/bw/fig1_eigenfaces_gallery.png" alt="Figure 1: Mean Face and Top 15 Eigenfaces">
+          <div class="gallery-caption">
+            <h4>Figure 1: Mean Face &amp; Top 15 Eigenfaces</h4>
+            <p>The Mean Face $\Psi$ (top-left) captures the common human baseline. The first two eigenfaces ($u_1, u_2$) capture global lighting shifts, while subsequent ones encode facial features.</p>
+          </div>
+        </div>
+
+        <!-- FIG 2 -->
+        <div class="gallery-item">
+          <img src="results/bw/fig2_scree_plot.png" alt="Figure 2: Scree Plot & Cumulative Variance">
+          <div class="gallery-caption">
+            <h4>Figure 2: Scree Plot &amp; Cumulative Variance</h4>
+            <p>Eigenvalues decay exponentially. The first 10 components capture 60.2% variance; $K=40$ achieves 86.3% variance with a 99.02% reduction in storage dimensionality.</p>
+          </div>
+        </div>
+
+        <!-- FIG 3 -->
+        <div class="gallery-item">
+          <img src="results/bw/fig3_face_reconstruction.png" alt="Figure 3: Progressive Face Reconstruction">
+          <div class="gallery-caption">
+            <h4>Figure 3: Progressive Face Reconstruction</h4>
+            <p>Reconstruction convergence from $K=2$ (coarse shadow) to $K=5$ (contour), $K=10$ (facial features), and $K=40$ (sharp individual likeness with $\epsilon_d = 4.73$).</p>
+          </div>
+        </div>
+
+        <!-- FIG 4 -->
+        <div class="gallery-item">
+          <img src="results/bw/fig4_decision_space_geometry.png" alt="Figure 4: 2D Decision Space Geometry">
+          <div class="gallery-caption">
+            <h4>Figure 4: 2D Decision Space Geometry</h4>
+            <p>Mapping $\epsilon_d$ (DFFS) against $\epsilon_c$ (DIFS). The two thresholds $\theta_f = 7.884$ and $\theta_c = 6.463$ divide the space into Known Faces, Unknown Faces, and Non-Faces.</p>
+          </div>
+        </div>
+
+        <!-- FIG 5 -->
+        <div class="gallery-item">
+          <img src="results/bw/fig5_robustness_analysis.png" alt="Figure 5: Robustness Analysis">
+          <div class="gallery-caption">
+            <h4>Figure 5: Robustness Under Noise &amp; Occlusion</h4>
+            <p>Demonstrates resilience against severe Gaussian noise ($\sigma=0.25$) and regional blockages (eye bars / medical masks) thanks to holistic dot-product projection.</p>
+          </div>
+        </div>
+
+        <!-- FIG 6 -->
+        <div class="gallery-item">
+          <img src="results/bw/fig6_accuracy_vs_k.png" alt="Figure 6: Accuracy and Error vs K">
+          <div class="gallery-caption">
+            <h4>Figure 6: Accuracy &amp; Error Tradeoff vs. K</h4>
+            <p>Identification accuracy peaks and plateaus at 87.62% around $K=40-50$, confirming that tail components capture sensor noise rather than identity cues.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- QR Verification & Official Links -->
+    <div class="section-card">
+      <div class="section-header" style="text-align: center;">
+        <h3 class="section-title" style="justify-content: center;">5. Project Repository &amp; Academic Verification</h3>
+        <p class="section-subtitle">Official open-source release for code auditing and academic defense.</p>
+      </div>
+
+      <div class="qr-container">
+        <img src="results/bw/github_qr.png" alt="GitHub Repository QR Code">
+        <div style="text-align: left;">
+          <div style="font-weight: 700; font-size: 1.05rem;">GitHub Source Code Repository</div>
+          <div style="font-family: monospace; font-size: 0.9rem; color: var(--primary); margin: 3px 0;">
+            <a href="https://github.com/shashank-emty/Eigen-faces" target="_blank" style="color: inherit; text-decoration: none;">
+              https://github.com/shashank-emty/Eigen-faces
+            </a>
+          </div>
+          <div style="font-size: 0.85rem; color: var(--text-muted);">
+            Scan QR code or click link to inspect Git commits, issue tracking, and reproduction logs.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <p><strong>Eigenfaces for Recognition (Turk &amp; Pentland, 1991)</strong> &bull; Python Project Implementation</p>
+      <p style="margin-top: 4px;">
+        Presented by <strong>Shashank M T</strong> (UUCMS: <code>U01BH25C0174</code>) &bull; BCA(AI), 3rd Sem, 2nd Year
+      </p>
+      <p style="margin-top: 4px;">
+        Under the Guidance of <strong>Ragunandan B</strong> (Guest Lecturer &ndash; Introduction to Machine Learning)
+      </p>
+      <p style="margin-top: 4px;">Pooja Bhagavat Mahajana First Grade College, Mysuru &bull; Academic Year 2026&ndash;2027</p>
+    </footer>
+
+  </div>
+
+</body>
+</html>

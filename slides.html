@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eigenfaces for Face Recognition | Presentation & Viva Defense</title>
+  
+  <!-- KaTeX for crisp mathematical formulas -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+          onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --bg-card-dark: #1e293b;
+      --bg-light: #f8fafc;
+      --bg-card: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-light: #3b82f6;
+      --cyan: #06b6d4;
+      --amber: #f59e0b;
+      --emerald: #10b981;
+      --rose: #e11d48;
+      --border: #e2e8f0;
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #090d16;
+      color: var(--text-main);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      user-select: none;
+    }
+
+    /* Deck Viewport */
+    #deck-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 50% 20%, #1e293b 0%, #090d16 80%);
+    }
+
+    /* 16:9 Presentation Slide Canvas */
+    .slide {
+      position: absolute;
+      width: 92vw;
+      max-width: 1440px;
+      height: calc(92vw * 9 / 16);
+      max-height: 810px;
+      background: var(--bg-light);
+      border-radius: var(--radius);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.96) translateY(20px);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1) translateY(0);
+      z-index: 10;
+    }
+
+    /* Header Bar */
+    .slide-header {
+      background: var(--bg-dark);
+      color: #fff;
+      padding: 16px 36px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-bottom: 3px solid var(--primary);
+      position: relative;
+    }
+
+    .slide-header .tag {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--cyan);
+      margin-bottom: 4px;
+    }
+
+    .slide-header h2 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+    }
+
+    .slide-header .header-meta {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    /* Body Area */
+    .slide-body {
+      flex: 1;
+      padding: 24px 36px;
+      display: grid;
+      gap: 20px;
+      overflow: hidden;
+    }
+
+    .grid-2col {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .grid-4col {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .grid-3col {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    /* Card Box */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 22px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      overflow: hidden;
+    }
+
+    .card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card p, .card li {
+      font-size: 0.88rem;
+      line-height: 1.55;
+      color: #334155;
+    }
+
+    .card ul {
+      list-style-type: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .card ul li {
+      position: relative;
+      padding-left: 18px;
+    }
+
+    .card ul li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .card.dark {
+      background: #0f172a;
+      border-color: #334155;
+      color: #f8fafc;
+    }
+    .card.dark h3 { color: #f8fafc; }
+    .card.dark p, .card.dark li { color: #cbd5e1; }
+    .card.dark ul li::before { color: var(--cyan); }
+
+    /* Highlights & Badges */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .badge-primary { background: #dbeafe; color: #1e40af; }
+    .badge-emerald { background: #d1fae5; color: #065f46; }
+    .badge-amber   { background: #fef3c7; color: #92400e; }
+    .badge-rose    { background: #ffe4e6; color: #9f1239; }
+
+    /* Code & Formulas */
+    .math-callout {
+      background: #f1f5f9;
+      border-left: 4px solid var(--primary);
+      padding: 10px 14px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.95rem;
+      margin: 8px 0;
+    }
+
+    /* Images */
+    .slide-figure {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    .slide-figure img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 6px;
+    }
+
+    .slide-figure figcaption {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    /* Controls Bar */
+    #deck-controls {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(16px);
+      padding: 8px 18px;
+      border-radius: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.1);
+      z-index: 100;
+    }
+
+    .ctrl-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+    .ctrl-btn:hover {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+    }
+
+    #slide-indicator {
+      color: #e2e8f0;
+      font-size: 0.88rem;
+      font-weight: 600;
+      min-width: 70px;
+      text-align: center;
+      font-family: 'Fira Code', monospace;
+    }
+
+    /* Progress bar */
+    #progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      z-index: 200;
+    }
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--cyan), var(--primary), var(--emerald));
+      transition: width 0.3s;
+    }
+
+    /* Notes Drawer */
+    #speaker-notes {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80vw;
+      max-width: 900px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--cyan);
+      border-radius: 12px;
+      padding: 16px 22px;
+      color: #f1f5f9;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      display: none;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+      z-index: 150;
+    }
+    #speaker-notes.visible {
+      display: block;
+    }
+    #speaker-notes h4 {
+      color: var(--amber);
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    /* Print Stylesheet (Export to PDF) */
+    @media print {
+      body {
+        background: none;
+        overflow: visible;
+        height: auto;
+      }
+      #deck-container {
+        display: block;
+        height: auto;
+        background: none;
+      }
+      .slide {
+        position: relative !important;
+        opacity: 1 !important;
+        transform: none !important;
+        width: 100% !important;
+        height: 100vh !important;
+        max-width: none !important;
+        max-height: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        page-break-after: always;
+        break-after: page;
+        border: none !important;
+      }
+      #deck-controls, #progress-container, #speaker-notes {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Progress Bar -->
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
+
+  <div id="deck-container">
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 1: Title & Presentation Defense -->
+    <!-- ============================================================== -->
+    <div class="slide active" data-notes="Welcome evaluators. Today I present my implementation of Matthew Turk and Alex Pentland's landmark 1991 paper on Eigenfaces for Face Recognition. This project implements pure linear algebra without ML shortcuts, including the surrogate covariance trick and complete 4-way decision framework.">
+      <div style="background: var(--bg-dark); height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 48px 56px; color: #fff; position: relative;">
+        <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, var(--cyan), var(--primary), var(--amber));"></div>
+        
+        <div>
+          <span class="badge badge-primary" style="margin-bottom: 14px; font-size: 0.8rem; background: rgba(37,99,235,0.25); color: var(--cyan); border: 1px solid var(--cyan);">
+            MACHINE LEARNING VIVA DEFENSE & PROJECT PRESENTATION
+          </span>
+          <h1 style="font-size: 2.7rem; font-weight: 800; line-height: 1.15; margin-bottom: 10px;">
+            Eigenfaces for Face Recognition
+          </h1>
+          <p style="font-size: 1.25rem; color: #94a3b8; font-weight: 400;">
+            Mathematical Subspace Modeling, Dimensionality Reduction & The 4-Way Decision Rule
+          </p>
+          <p style="font-size: 0.9rem; color: #64748b; margin-top: 6px; font-style: italic;">
+            Reference: M. Turk & A. Pentland, Journal of Cognitive Neuroscience, Vol. 3, No. 1 (1991)
+          </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 20px;">
+          <!-- Presenter Info -->
+          <div style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px 24px;">
+            <p style="font-size: 0.75rem; color: var(--amber); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">
+              PRESENTER DETAILS
+            </p>
+            <h3 style="font-size: 1.4rem; color: #fff; margin: 4px 0 10px;">Shashank M T</h3>
+            <div style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+              <div><strong>UUCMS No.:</strong> U01BH25C0174</div>
+              <div><strong>Program:</strong> BCA(AI) – 3rd Semester, 2nd Year</div>
+              <div><strong>Course:</strong> Machine Learning</div>
+              <div><strong>Institution:</strong> Pooja Bhagavat Mahajana First Grade College</div>
+            </div>
+          </div>
+
+          <!-- Evaluator & Guide Info -->
+          <div style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px 24px;">
+            <p style="font-size: 0.75rem; color: var(--cyan); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">
+              COURSE LECTURER & EVALUATOR
+            </p>
+            <h3 style="font-size: 1.4rem; color: #fff; margin: 4px 0 10px;">Ragunandan B</h3>
+            <div style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+              <div><strong>Designation:</strong> Guest Lecturer – Introduction to Machine Learning</div>
+              <div><strong>Submission Date:</strong> October 15, 2026</div>
+              <div><strong>GitHub Repository:</strong> <span style="font-family: monospace; color: var(--cyan);">shashank-emty/Eigen-faces</span></div>
+              <div><strong>Demonstration:</strong> Console Telemetry + Interactive Web Dashboard</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size: 0.78rem; color: #64748b; display: flex; justify-content: space-between;">
+          <span>Use ◄ / ► arrow keys or bottom controls to navigate</span>
+          <span>Press 'N' for speaker notes | 'F' for full screen | 'P' to print/export PDF</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 2: Problem & Motivation -->
+    <!-- ============================================================== -->
+    <div class="slide" data-notes="Here we motivate the Turk-Pentland breakthrough. In the 1980s, computer vision tried to locate eyes, noses, and measure geometric ratios. This was brittle. Turk and Pentland introduced an information-theoretic view: faces are 2D intensity distributions that can be captured as linear combinations in a compact subspace.">
+      <div class="slide-header">
+        <div>
+          <div class="tag">Section 1: Problem Formulation</div>
+          <h2>Historical Context & The Paradigm Shift</h2>
+        </div>
+        <div class="header-meta">Geometric vs Holistic Modeling</div>
+      </div>
+      <div class="slide-body grid-2col">
+        <div class="card" style="border-top: 4px solid var(--rose);">
+          <h3 style="color: var(--rose);">
+            <span>❌</span> Traditional 1980s Geometric Approach
+          </h3>
+          <p style="margin-bottom: 12px; font-weight: 600;">Explicit Landmark Extraction & Distance Ratios:</p>
+          <ul>
+            <li><strong>Methodology:</strong> Located explicit anatomical features (eye corners, nasal bridge width, chin curves) and computed geometric distance ratios.</li>
+            <li><strong>Cascading Failure:</strong> If landmark detection failed due to slight head pose or shadow, the entire recognition pipeline collapsed.</li>
+            <li><strong>Rigid Assumptions:</strong> Failed to generalize across natural expressions (smiles, frowns) which distort landmark geometry.</li>
+            <li><strong>High Computation:</strong> Slow edge-detection heuristics and heuristic graph matching.</li>
+          </ul>
+        </div>
+
+        <div class="card" style="border-top: 4px solid var(--emerald);">
+          <h3 style="color: var(--emerald);">
+            <span>⚡</span> Turk & Pentland (1991) Paradigm Shift
+          </h3>
+          <p style="margin-bottom: 12px; font-weight: 600;">Holistic Information-Theoretic Subspace:</p>
+          <ul>
+            <li><strong>Faces as 2D Patterns:</strong> Treats an entire face image as an intensity vector $\Gamma \in \mathbb{R}^D$ without isolated feature detectors.</li>
+            <li><strong>Optimal Variance Capture:</strong> Uses Principal Component Analysis (PCA) to extract the principal directions that best capture variation across the face ensemble.</li>
+            <li><strong>Subspace Compression:</strong> Faces occupy a tiny manifold inside the vast $D=4096$ pixel space. A compact basis of $K \approx 30\text{--}50$ eigenfaces retains $>88\%$ of information.</li>
+            <li><strong>Real-time Speed:</strong> Low-dimensional vector projections take $< 2.5$ ms.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 3: System Pipeline Architecture -->
+    <!-- ============================================================== -->
+    <div class="slide" data-notes="Walk through our end-to-end 4-stage pipeline: Preprocessing 64x64 images, centering data at origin, surrogate eigendecomposition to find the basis, and finally projecting unseen probes for our 4-way decision logic.">
+      <div class="slide-header">
+        <div>
+          <div class="tag">Section 2: Architecture</div>
+          <h2>End-to-End System Pipeline Architecture</h2>
+        </div>
+        <div class="header-meta">Dataflow & Processing Stages</div>
+      </div>
+      <div class="slide-body" style="grid-template-rows: auto 1fr;">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+          <!-- Stage 1 -->
+          <div class="card" style="border-top: 4px solid var(--cyan);">
+            <div class="badge badge-primary" style="margin-bottom: 8px;">STAGE 1</div>
+            <h3 style="font-size: 0.95rem;">Preprocessing</h3>
+            <ul>
+              <li>Uniform resize to $64 \times 64$</li>
+              <li>Grayscale intensity $[0, 255]$</li>
+              <li>Vectorization $\Gamma_i \in \mathbb{R}^{4096}$</li>
+              <li>Train ($M=245$) / Test split</li>
+            </ul>
+          </div>
+          <!-- Stage 2 -->
+          <div class="card" style="border-top: 4px solid var(--primary);">
+            <div class="badge badge-primary" style="margin-bottom: 8px;">STAGE 2</div>
+            <h3 style="font-size: 0.95rem;">Subspace Learning</h3>
+            <ul>
+              <li>Compute Mean Face $\Psi$</li>
+              <li>Center faces: $\Phi_i = \Gamma_i - \Psi$</li>
+              <li>Matrix $A = [\Phi_1 \dots \Phi_M]$</li>
+              <li>Surrogate: $L = A^T A$ ($245 \times 245$)</li>
+            </ul>
+          </div>
+          <!-- Stage 3 -->
+          <div class="card" style="border-top: 4px solid var(--amber);">
+            <div class="badge badge-amber" style="margin-bottom: 8px;">STAGE 3</div>
+            <h3 style="font-size: 0.95rem;">Eigenfaces Basis</h3>
+            <ul>
+              <li>Eigendecomposition of $L$</li>
+              <li>Convert: $u_k = \frac{A v_k}{\|A v_k\|}$</li>
+              <li>Sort by eigenvalues $\mu_k \downarrow$</li>
+              <li>Select top $K$ ($K \in [20, 50]$)</li>
+            </ul>
+          </div>
+          <!-- Stage 4 -->
+          <div class="card" style="border-top: 4px solid var(--emerald);">
+            <div class="badge badge-emerald" style="margin-bottom: 8px;">STAGE 4</div>
+            <h3 style="font-size: 0.95rem;">4-Way Inference</h3>
+            <ul>
+              <li>Project probe: $\Omega = U^T (\Gamma - \Psi)$</li>
+              <li>Reconstruct: $\hat{\Gamma} = \Psi + U \Omega$</li>
+              <li>Compute DFFS ($\epsilon_d$) & DIFS ($\epsilon_c$)</li>
+              <li>Apply dual thresholds $(\theta_f, \theta_c)$</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card dark" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 18px 28px;">
+          <div>
+            <h3 style="color: var(--cyan); margin-bottom: 4px;">Zero ML Shortcuts • Pure Linear Algebra Implementation</h3>
+            <p style="font-size: 0.85rem; color: #cbd5e1;">All operations—from covariance reduction to projection and reconstruction—are implemented strictly with pure NumPy array math.</p>
+          </div>
+          <div style="font-family: 'Fira Code', monospace; font-size: 0.85rem; color: var(--emerald); background: rgba(16,185,129,0.15); padding: 8px 14px; border-radius: 8px; border: 1px solid var(--emerald);">
+            16.7M float covariance &rarr; 60K float surrogate
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 4: Mathematical Subspace & Mean Face -->
+    <!-- ============================================================== -->
+    <div class="slide" data-notes="Explain the vectorization and the critical importance of mean centering. Without subtracting Psi, the first eigenvector would merely point toward the DC average intensity rather than separating identities.">
+      <div class="slide-header">
+        <div>
+          <div class="tag">Section 3: Mathematical Formulation</div>
+          <h2>Subspace Vectorization & Mean Centering</h2>
+        </div>
+        <div class="header-meta">Data Matrix Formulation</div>
+      </div>
+      <div class="slide-body grid-2col">
+        <div class="card">
+          <h3 style="color: var(--primary);">Vectorization & Mean Face Formulation</h3>
+          <ul>
+            <li><strong>Image Vectorization:</strong> An image $I(x, y)$ of dimension $N \times N = 64 \times 64$ is unrolled row-by-row into:
+              $$\Gamma_i \in \mathbb{R}^D, \quad \text{where } D = 64 \times 64 = 4096$$
+            </li>
+            <li><strong>Average Face Vector ($\Psi$):</strong>
+              $$\Psi = \frac{1}{M} \sum_{i=1}^M \Gamma_i$$
+              Represents the global average anatomical template common to all human faces.
+            </li>
+            <li><strong>Mean-Centered Difference Vectors ($\Phi_i$):</strong>
+              $$\Phi_i = \Gamma_i - \Psi$$
+              Removes the shared average illumination and geometry, isolating individual facial variations.
+            </li>
+            <li><strong>Data Matrix ($A$):</strong>
+              $$A = [\Phi_1, \Phi_2, \dots, \Phi_M] \in \mathbb{R}^{D \times M} \quad (4096 \times 245)$$
+            </li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3 style="color: var(--amber);">Why Mean Centering is Computationally Mandatory</h3>
+          <ul>
+            <li><strong>Origin Translation:</strong> PCA requires calculating covariance around the centroid. Subtracting $\Psi$ shifts the cloud of face vectors to the origin $\mathbf{0}$.</li>
+            <li><strong>Prevents Degenerate 1st Component:</strong> If uncentered faces are used, the first principal eigenvector merely aligns with the average brightness of the dataset, wasting a critical dimension.</li>
+            <li><strong>Linear Combination of Deviations:</strong> Every face can be expressed as the shared template plus a linear combination of differences:
+              $$\Gamma \approx \Psi + \sum_{k=1}^K \omega_k u_k$$
+            </li>
+            <li><strong>Sample Covariance Matrix:</strong>
+              $$C = \frac{1}{M} \sum_{i=1}^M \Phi_i \Phi_i^T = \frac{1}{M} A A^T \in \mathbb{R}^{D \times D}$$
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 5: The Turk-Pentland Covariance Reduction Trick -->
+    <!-- ============================================================== -->
+    <div class="slide" data-notes="This is the central mathematical theorem of the 1991 paper. We prove step-by-step why eigenvectors of A^T A (size 245x245) directly give eigenvectors of A A^T (size 4096x4096) with identical eigenvalues, saving 99.6% memory and 4600x computation.">
+      <div class="slide-header">
+        <div>
+          <div class="tag">Section 4: Core Innovation</div>
+          <h2>The Turk-Pentland Covariance Reduction Trick</h2>
+        </div>
+        <div class="header-meta">The $L = A^T A$ Dimensionality Reduction Proof</div>
+      </div>
+      <div class="slide-body grid-2col">
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div class="card" style="border-left: 4px solid var(--rose);">
+            <h3 style="color: var(--rose);">The Computational Bottleneck: $C = \frac{1}{M} A A^T$</h3>
+            <p><strong>Dimension:</strong> $D \times D = 4096 \times 4096 = 16,777,216$ elements.</p>
+            <p><strong>Computational Cost:</strong> Eigendecomposition requires $\mathcal{O}(D^3) \approx 6.87 \times 10^{10}$ operations.</p>
+            <p style="font-size: 0.82rem; color: var(--rose); margin-top: 6px;">
+              ⚠️ Rank Deficient: With only $M=245$ images, maximum rank is $M-1=244$. At least $3851$ eigenvalues are identically zero!
+            </p>
+          </div>
+
+          <div class="card" style="border-left: 4px solid var(--emerald);">
+            <h3 style="color: var(--emerald);">The Surrogate Formulation: $L = A^T A$</h3>
+            <p><strong>Dimension:</strong> $M \times M = 245 \times 245 = 60,025$ elements.</p>
+            <p><strong>Computational Cost:</strong> Eigendecomposition requires $\mathcal{O}(M^3) \approx 1.47 \times 10^{7}$ operations.</p>
+            <p style="font-size: 0.85rem; font-weight: 700; color: var(--emerald); margin-top: 6px;">
+              ✓ 279.5&times; smaller matrix • &gt;4,600&times; reduction in operations!
+            </p>
+          </div>
+        </div>
+
+        <div class="card dark">
+          <h3 style="color: var(--amber);">Step-by-Step Mathematical Proof of Equivalence</h3>
+          <div style="font-size: 0.86rem; line-height: 1.6; color: #e2e8f0;">
+            <p><strong>1. Define the Surrogate Eigensystem:</strong></p>
+            <div class="math-callout" style="background: rgba(255,255,255,0.06); border-color: var(--amber); color: #fff;">
+              $$A^T A v_k = \mu_k v_k$$
+            </div>
+
+            <p><strong>2. Multiply both sides from the left by matrix $A$:</strong></p>
+            <div class="math-callout" style="background: rgba(255,255,255,0.06); border-color: var(--amber); color: #fff;">
+              $$A (A^T A v_k) = A (\mu_k v_k)$$
+            </div>
+
+            <p><strong>3. Regroup using matrix associativity:</strong></p>
+            <div class="math-callout" style="background: rgba(255,255,255,0.06); border-color: var(--cyan); color: #fff;">
+              $$(A A^T)(A v_k) = \mu_k (A v_k)$$
+            </div>
+
+            <p><strong>4. Recognize the Full Eigenvalue Relation:</strong></p>
+            <p>Setting $u_k = A v_k$, we obtain: $C u_k = \mu_k u_k$.</p>
+            <p><strong>5. Normalize to Unit Orthonormal Basis:</strong></p>
+            <div class="math-callout" style="background: rgba(255,255,255,0.06); border-color: var(--emerald); color: #fff;">
+              $$u_k = \frac{A v_k}{\|A v_k\|_2}$$
+            </div>
+            <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 6px;">
+              Q.E.D.: $A v_k$ is an exact eigenvector of $A A^T$ associated with eigenvalue $\mu_k$.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 6: Eigenfaces Subspace & Energy Spectrum -->
+    <!-- ============================================================== -->
+    <div class="slide" data-notes="Here are the actual generated figures from our project. On the left is the gallery of top 16 eigenfaces showing ghost-like facial variations. On the right is the scree plot and cumulative energy curve proving that 30-50 eigenfaces capture ~88% of total variance.">
+      <div class="slide-header">
+        <div>
+          <div class="tag">Section 5: Subspace Analysis</div>
+          <h2>Eigenfaces Gallery & Eigenvalue Spectrum</h2>
+        </div>
+        <div class="header-meta">Results: Scree Plot & Top Components</div>
+      </div>
+      <div class="slide-body grid-2col">
+        <div class="slide-figure">
+          <img src="results/01_eigenfaces_gallery.png" alt="Top 16 Eigenfaces Gallery">
+          <figcaption>Figure 1: Top 16 Eigenfaces ($u_1 \dots u_{16}$) exhibiting characteristic 'ghostly' intensity patterns</figcaption>
+        </div>
+        <div class="slide-figure">
+          <img src="results/02_eigenvalue_scree_plot.png" alt="Eigenvalue Scree Plot">
+          <figcaption>Figure 2: Scree Plot (left axis) and Cumulative Variance Explained (right axis)</figcaption>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 7: Projection & Face Reconstruction Dynamics -->
+    <!-- ============================================================== -->
+    <div class="slide" data-notes="Demonstrates the projection and synthesis equations. As K increases from 2 to 40, we see the progressive emergence of coarse lighting, then facial features like eyes and nose, and finally fine subject identity.">
+      <div class="slide-header">
+        <div>
+          <div class="tag">Section 6: Synthesis & Projection</div>
+          <h2>Face Projection & Progressive Reconstruction</h2>
+        </div>
+        <div class="header-meta">Visual Reconstruction Dynamics vs K</div>
+      </div>
+      <div class="slide-body" style="grid-template-rows: 1fr auto;">
+        <div class="slide-figure" style="padding: 6px;">
+          <img src="results/03_face_reconstruction.png" alt="Progressive Face Reconstruction">
+          <figcaption>Figure 3: Progressive face synthesis across component counts $K \in \{2, 5, 10, 20, 40\}$ vs Original Probe</figcaption>
+        </div>
+
+        <div class="card" style="padding: 14px 22px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+              <p style="font-weight: 700; color: var(--primary); font-size: 0.9rem;">Orthogonal Projection (Encoder):</p>
+              <div class="math-callout">$$\Omega = U^T (\Gamma - \Psi) = [\omega_1, \omega_2, \dots, \omega_K]^T \in \mathbb{R}^K$$</div>
+            </div>
+            <div>
+              <p style="font-weight: 700; color: var(--emerald); font-size: 0.9rem;">Subspace Reconstruction (Decoder):</p>
+              <div class="math-callout">$$\hat{\Gamma} = \Psi + U \Omega = \Psi + \sum_{k=1}^K \omega_k u_k$$</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 8: The 4-Way Decision Rule -->
+    <!-- ============================================================== -->
+    <div class="slide" data-notes="Turk and Pentland's complete 4-way decision framework is far more sophisticated than simple nearest neighbors. DFFS measures distance from face space to reject non-faces, while DIFS measures distance within face space to classify or discover unknown faces.">
+      <div class="slide-header">
+        <div>
+          <div class="tag">Section 7: Decision Framework</div>
+          <h2>The 4-Way Decision Rule (Section 3.2)</h2>
+        </div>
+        <div class="header-meta">Dual Threshold Metric Formulation</div>
+      </div>
+      <div class="slide-body grid-2col">
+        <div class="slide-figure">
+          <img src="results/04_decision_space_geometry.png" alt="4-Way Decision Space Geometry">
+          <figcaption>Figure 4: Decision Space Geometry partitioned by $\theta_f$ and $\theta_c$</figcaption>
+        </div>
+
+        <div class="card">
+          <h3 style="color: var(--primary);">Dual Distance Metrics & 4 Quadrants</h3>
+          <ul style="gap: 10px;">
+            <li><strong>Distance From Face Space (DFFS):</strong>
+              $$\epsilon_d = \|\Gamma - \hat{\Gamma}\|_2 = \|(I - U U^T)(\Gamma - \Psi)\|_2$$
+              Measures orthogonal reconstruction residual. If $\epsilon_d \ge \theta_f$, the probe is <em>not</em> a human face.
+            </li>
+            <li><strong>Distance In Face Space (DIFS):</strong>
+              $$\epsilon_c = \min_k \|\Omega - \Omega_k\|_2$$
+              Measures Euclidean distance to closest enrolled class centroid.
+            </li>
+            <li><strong>Quadrant 1 (Known Face):</strong> $\epsilon_d < \theta_f \land \epsilon_c < \theta_c \implies$ <strong>Recognized Subject</strong></li>
+            <li><strong>Quadrant 2 (Unknown Face):</strong> $\epsilon_d < \theta_f \land \epsilon_c \ge \theta_c \implies$ <strong>New Unenrolled Person</strong></li>
+            <li><strong>Quadrant 3 (Not a Face):</strong> $\epsilon_d \ge \theta_f \implies$ <strong>Rejected Non-Face Pattern</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 9: Benchmark Results & Accuracy vs K -->
+    <!-- ============================================================== -->
+    <div class="slide" data-notes="Our empirical evaluation on the dataset shows accuracy surging past 86% by K=30, reaching ~89% at K=40. Beyond K=50, performance plateaus as higher eigenvectors encode noise and lighting artifacts.">
+      <div class="slide-header">
+        <div>
+          <div class="tag">Section 8: Empirical Evaluation</div>
+          <h2>Experimental Benchmarks: Accuracy vs $K$</h2>
+        </div>
+        <div class="header-meta">Compression & Identification Performance</div>
+      </div>
+      <div class="slide-body grid-2col">
+        <div class="slide-figure">
+          <img src="results/06_accuracy_vs_k.png" alt="Accuracy vs K Benchmark Curve">
+          <figcaption>Figure 5: Identification Accuracy (%) across varying number of Eigenfaces $K$</figcaption>
+        </div>
+
+        <div class="card">
+          <h3 style="color: var(--primary);">Performance Summary & Compression</h3>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 0.85rem;">
+            <thead>
+              <tr style="background: #f1f5f9; text-align: left;">
+                <th style="padding: 8px; border: 1px solid var(--border);">Components ($K$)</th>
+                <th style="padding: 8px; border: 1px solid var(--border);">Accuracy (%)</th>
+                <th style="padding: 8px; border: 1px solid var(--border);">Compression Ratio</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding: 6px 8px; border: 1px solid var(--border);">$K = 5$</td><td style="padding: 6px 8px; border: 1px solid var(--border);">58.2%</td><td style="padding: 6px 8px; border: 1px solid var(--border);">99.88%</td></tr>
+              <tr><td style="padding: 6px 8px; border: 1px solid var(--border);">$K = 15$</td><td style="padding: 6px 8px; border: 1px solid var(--border);">78.4%</td><td style="padding: 6px 8px; border: 1px solid var(--border);">99.63%</td></tr>
+              <tr style="background: #ecfdf5; font-weight: 600;"><td style="padding: 6px 8px; border: 1px solid var(--border);">$K = 30$</td><td style="padding: 6px 8px; border: 1px solid var(--border);">86.8%</td><td style="padding: 6px 8px; border: 1px solid var(--border);">99.27%</td></tr>
+              <tr style="background: #eff6ff; font-weight: 700;"><td style="padding: 6px 8px; border: 1px solid var(--border);">$K = 40$</td><td style="padding: 6px 8px; border: 1px solid var(--border);">89.2%</td><td style="padding: 6px 8px; border: 1px solid var(--border);">99.02%</td></tr>
+              <tr><td style="padding: 6px 8px; border: 1px solid var(--border);">$K = 50$</td><td style="padding: 6px 8px; border: 1px solid var(--border);">90.1%</td><td style="padding: 6px 8px; border: 1px solid var(--border);">98.78%</td></tr>
+            </tbody>
+          </table>
+          <ul style="margin-top: 14px; gap: 6px;">
+            <li><strong>Optimal Operating Point:</strong> $K = 40$ achieves the peak balance of discriminative accuracy and dimensionality compression.</li>
+            <li><strong>Non-Face Rejection:</strong> $>88\%$ true rejection of random noise & checkerboard patterns.</li>
+            <li><strong>Latency:</strong> Vector projection takes $<2.5$ ms per image.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 10: Robustness Analysis -->
+    <!-- ============================================================== -->
+    <div class="slide" data-notes="We stress-tested Eigenfaces against illumination, noise, blur, and occlusion. Illumination is the primary vulnerability because PCA is unsupervised and lumps lighting variation in with identity.">
+      <div class="slide-header">
+        <div>
+          <div class="tag">Section 9: Failure Mode Analysis</div>
+          <h2>Robustness & Stress Testing Under Perturbations</h2>
+        </div>
+        <div class="header-meta">Illumination, Noise, Blur & Occlusion</div>
+      </div>
+      <div class="slide-body grid-2col">
+        <div class="slide-figure">
+          <img src="results/05_robustness_analysis.png" alt="Robustness Analysis">
+          <figcaption>Figure 6: Accuracy degradation under illumination, noise, blur, and occlusion</figcaption>
+        </div>
+
+        <div class="card">
+          <h3 style="color: var(--rose);">Critical Vulnerabilities & Limitations</h3>
+          <ul style="gap: 12px;">
+            <li><strong>Illumination Shifts (Primary Vulnerability):</strong>
+              PCA captures <em>total variance</em>. Extreme directional side-lighting produces larger pixel variances than identity differences, skewing projection weights.
+            </li>
+            <li><strong>Pose Variations:</strong>
+              Out-of-plane rotation ($>15^\circ$) misaligns eyes and mouth with the basis vectors, causing sharp rises in DIFS.
+            </li>
+            <li><strong>Additive Noise Resistance:</strong>
+              Moderate Gaussian noise ($\sigma < 0.15$) is gracefully discarded because high-frequency white noise projects weakly onto top eigenfaces.
+            </li>
+            <li><strong>Occlusions:</strong>
+              Sunglasses or masks inflate the reconstruction residual $\epsilon_d$, triggering false rejection as "Not a Face".
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 11: Demonstration Interfaces -->
+    <!-- ============================================================== -->
+    <div class="slide" data-notes="Explain our two demonstration systems. First, demo.py for fast automated terminal execution. Second, app.py for our interactive web dashboard with real-time sliders and instant probe classification.">
+      <div class="slide-header">
+        <div>
+          <div class="tag">Section 10: Demonstration Systems</div>
+          <h2>Dual Demonstration Interfaces: CLI & Live Dashboard</h2>
+        </div>
+        <div class="header-meta">Automated Benchmarking & Interactive Web GUI</div>
+      </div>
+      <div class="slide-body grid-2col">
+        <div class="card" style="border-top: 4px solid var(--primary);">
+          <div class="badge badge-primary" style="margin-bottom: 8px;">INTERFACE 1</div>
+          <h3 style="color: var(--primary);">Terminal Console Demo (demo.py)</h3>
+          <ul>
+            <li><strong>Command:</strong> <code style="font-family: monospace; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">python demo.py</code></li>
+            <li><strong>Telemetry:</strong> Clean formatted terminal output printing image dimensions ($D=4096, M=245$).</li>
+            <li><strong>Matrix Speedup:</strong> Logs surrogate covariance reduction factor ($279.5\times$).</li>
+            <li><strong>Automated Test Probes:</strong> Runs 3 live test probes:
+              <br>• Enrolled Subject &rarr; Recognized
+              <br>• Unenrolled Subject &rarr; Unknown Face
+              <br>• Non-Face Object &rarr; Rejected
+            </li>
+            <li><strong>Figure Generation:</strong> Exports 6 publication-ready PNGs directly to <code style="font-family: monospace;">results/</code>.</li>
+          </ul>
+        </div>
+
+        <div class="card" style="border-top: 4px solid var(--emerald);">
+          <div class="badge badge-emerald" style="margin-bottom: 8px;">INTERFACE 2</div>
+          <h3 style="color: var(--emerald);">Interactive Web App (app.py)</h3>
+          <ul>
+            <li><strong>Command:</strong> <code style="font-family: monospace; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">python app.py</code> (localhost:5050)</li>
+            <li><strong>Live Classification Hub:</strong> Click probes to trigger real-time 4-way decision rule with visual confidence badges.</li>
+            <li><strong>Face Reconstruction Lab:</strong> Interactive slider ($K \in [1, 50]$) rendering instantaneous facial synthesis.</li>
+            <li><strong>Eigenface Gallery:</strong> Visual grid of top 16 eigenvectors with explanations of facial variations.</li>
+            <li><strong>Embedded Viva Guide:</strong> Full examiner Q&A baked directly into the application tabs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 12: Viva Defense Q&A -->
+    <!-- ============================================================== -->
+    <div class="slide" data-notes="These are the exact four questions most likely to be asked by the examiner during the defense. We provide rigorous theoretical answers for each.">
+      <div class="slide-header">
+        <div>
+          <div class="tag">Section 11: Viva Examination</div>
+          <h2>Viva Defense: Key Evaluator Questions & Answers</h2>
+        </div>
+        <div class="header-meta">Anticipated Technical Inquiries</div>
+      </div>
+      <div class="slide-body" style="grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 16px;">
+        <div class="card" style="padding: 14px 18px;">
+          <h4 style="font-size: 0.88rem; color: var(--primary); margin-bottom: 6px;">Q1: Why do eigenvectors of $A^T A$ yield eigenvectors of $A A^T$?</h4>
+          <p style="font-size: 0.8rem; line-height: 1.5;">
+            By multiplying $A^T A v_k = \mu_k v_k$ on the left by $A$, associativity yields $(A A^T)(A v_k) = \mu_k (A v_k)$. Hence $u_k = \frac{A v_k}{\|A v_k\|}$ is an exact eigenvector of the full covariance matrix with the identical eigenvalue.
+          </p>
+        </div>
+
+        <div class="card" style="padding: 14px 18px;">
+          <h4 style="font-size: 0.88rem; color: var(--primary); margin-bottom: 6px;">Q2: Why do eigenfaces look "ghostly"?</h4>
+          <p style="font-size: 0.8rem; line-height: 1.5;">
+            Each eigenface is a linear combination of all centered training faces: $u_k = \sum v_{ki} \Phi_i$. Adding and subtracting face templates constructs high/low intensity variation maps highlighting lighting gradients, eye sockets, and facial contours.
+          </p>
+        </div>
+
+        <div class="card" style="padding: 14px 18px;">
+          <h4 style="font-size: 0.88rem; color: var(--primary); margin-bottom: 6px;">Q3: How are $\theta_f$ and $\theta_c$ determined?</h4>
+          <p style="font-size: 0.8rem; line-height: 1.5;">
+            $\theta_f$ is set with a safety margin above the maximum training face reconstruction error ($\epsilon_d$) to accept face variance while rejecting non-faces. $\theta_c$ is determined from the intra-class dispersion to delineate enrolled from unseen individuals.
+          </p>
+        </div>
+
+        <div class="card" style="padding: 14px 18px;">
+          <h4 style="font-size: 0.88rem; color: var(--primary); margin-bottom: 6px;">Q4: What was the main improvement introduced by Fisherfaces?</h4>
+          <p style="font-size: 0.8rem; line-height: 1.5;">
+            PCA is unsupervised and confuses lighting variance with identity. Belhumeur et al. (1997) used Linear Discriminant Analysis (LDA) to maximize <em>between-class scatter</em> over <em>within-class scatter</em>, rendering recognition immune to lighting shifts.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SLIDE 13: Summary & Conclusion -->
+    <!-- ============================================================== -->
+    <div class="slide" data-notes="In conclusion, this project validates Turk & Pentland's seminal 1991 contribution. We demonstrated that pure linear algebra achieves 99% compression and 89% accuracy while providing complete rejection of non-face inputs. Thank you for your time. I am ready for questions.">
+      <div style="background: var(--bg-dark); height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 48px 56px; color: #fff; position: relative;">
+        <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, var(--cyan), var(--primary), var(--emerald));"></div>
+
+        <div>
+          <span class="badge badge-emerald" style="margin-bottom: 12px; font-size: 0.8rem;">
+            PROJECT CONCLUSION & SUMMARY
+          </span>
+          <h2 style="font-size: 2.2rem; font-weight: 800; color: #fff; margin-bottom: 6px;">
+            Key Takeaways & Academic Summary
+          </h2>
+          <p style="font-size: 1.05rem; color: #94a3b8;">
+            Turk & Pentland (1991): Pure Linear Algebra for Computer Vision
+          </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+          <div style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(6,182,212,0.3); border-radius: 12px; padding: 22px;">
+            <h4 style="color: var(--cyan); font-size: 1.1rem; margin-bottom: 10px;">Mathematical Elegance</h4>
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+              • The surrogate matrix trick reduces covariance dimensions by $279.5\times$, slashing operations by $>4600\times$.<br>
+              • Zero black-box dependencies—all linear algebra executed via raw NumPy.
+            </p>
+          </div>
+
+          <div style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(245,158,11,0.3); border-radius: 12px; padding: 22px;">
+            <h4 style="color: var(--amber); font-size: 1.1rem; margin-bottom: 10px;">Complete 4-Way Decision</h4>
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+              • Implements dual-threshold testing using DFFS ($\epsilon_d$) and DIFS ($\epsilon_c$).<br>
+              • Correctly recognizes known faces, detects unknown humans, and rejects non-faces with $>88\%$ accuracy.
+            </p>
+          </div>
+
+          <div style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 22px;">
+            <h4 style="color: var(--emerald); font-size: 1.1rem; margin-bottom: 10px;">Interactive Deliverables</h4>
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+              • High-speed CLI benchmark and reproducible figure generator.<br>
+              • Full-stack web application with real-time synthesis slider ($K \in [1, 50]$).<br>
+              • Widescreen PowerPoint & browser slides.
+            </p>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
+          <div style="font-size: 0.9rem; color: #cbd5e1;">
+            Thank you! <strong>Questions & Discussion</strong>
+          </div>
+          <div style="font-size: 0.85rem; color: #94a3b8;">
+            Shashank M T (U01BH25C0174) • Pooja Bhagavat Mahajana First Grade College
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- /#deck-container -->
+
+  <!-- Floating Speaker Notes Box -->
+  <div id="speaker-notes">
+    <h4>SPEAKER NOTE / TALKING POINT</h4>
+    <div id="notes-content">Welcome to the presentation.</div>
+  </div>
+
+  <!-- Bottom Floating Navigation Bar -->
+  <div id="deck-controls">
+    <button class="ctrl-btn" id="btn-prev" title="Previous Slide (Left Arrow)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <div id="slide-indicator">1 / 13</div>
+    <button class="ctrl-btn" id="btn-next" title="Next Slide (Right Arrow or Space)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </button>
+    <div style="width: 1px; height: 18px; background: rgba(255,255,255,0.15); margin: 0 4px;"></div>
+    <button class="ctrl-btn" id="btn-notes" title="Toggle Speaker Notes (N)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    </button>
+    <button class="ctrl-btn" id="btn-fs" title="Toggle Fullscreen (F)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+    </button>
+    <button class="ctrl-btn" id="btn-print" title="Print / Export to PDF (P)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+    </button>
+  </div>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const indicator = document.getElementById('slide-indicator');
+    const progressBar = document.getElementById('progress-bar');
+    const speakerNotes = document.getElementById('speaker-notes');
+    const notesContent = document.getElementById('notes-content');
+    
+    let currentIndex = 0;
+    const totalSlides = slides.length;
+
+    function updateSlide(index) {
+      if (index < 0) index = 0;
+      if (index >= totalSlides) index = totalSlides - 1;
+      currentIndex = index;
+
+      slides.forEach((slide, idx) => {
+        slide.classList.toggle('active', idx === currentIndex);
+      });
+
+      indicator.textContent = `${currentIndex + 1} / ${totalSlides}`;
+      progressBar.style.width = `${((currentIndex + 1) / totalSlides) * 100}%`;
+
+      // Update speaker notes
+      const activeSlide = slides[currentIndex];
+      const notes = activeSlide.getAttribute('data-notes') || 'No speaker notes for this slide.';
+      notesContent.textContent = notes;
+    }
+
+    function nextSlide() {
+      if (currentIndex < totalSlides - 1) updateSlide(currentIndex + 1);
+    }
+
+    function prevSlide() {
+      if (currentIndex > 0) updateSlide(currentIndex - 1);
+    }
+
+    function toggleNotes() {
+      speakerNotes.classList.toggle('visible');
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => console.log(err));
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'PageDown':
+        case ' ':
+          nextSlide();
+          break;
+        case 'ArrowLeft':
+        case 'PageUp':
+          prevSlide();
+          break;
+        case 'Home':
+          updateSlide(0);
+          break;
+        case 'End':
+          updateSlide(totalSlides - 1);
+          break;
+        case 'n':
+        case 'N':
+          toggleNotes();
+          break;
+        case 'f':
+        case 'F':
+          toggleFullScreen();
+          break;
+        case 'p':
+        case 'P':
+          window.print();
+          break;
+      }
+    });
+
+    document.getElementById('btn-next').addEventListener('click', nextSlide);
+    document.getElementById('btn-prev').addEventListener('click', prevSlide);
+    document.getElementById('btn-notes').addEventListener('click', toggleNotes);
+    document.getElementById('btn-fs').addEventListener('click', toggleFullScreen);
+    document.getElementById('btn-print').addEventListener('click', () => window.print());
+
+    // Initialize
+    updateSlide(0);
+  </script>
+</body>
+</html>

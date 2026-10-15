@@ -42,6 +42,7 @@ def print_step(step_num: int, title: str, formula: str = ""):
 def run_demonstration():
     print_header("PROJECT DEMONSTRATION: EIGEN FACES (TURK & PENTLAND, 1991)")
     print("Presenter: Shashank M T (UUCMS No.: U01BH25C0174)")
+    print("Course Lecturer: Ragunandan B (Guest Lecturer - Introduction to Machine Learning)")
     print("Course: BCA(AI) | Subject: Machine Learning")
     print("College: Pooja Bhagavat Mahajana First Grade College")
     print("GitHub Repo: https://github.com/shashank-emty/Eigen-faces")

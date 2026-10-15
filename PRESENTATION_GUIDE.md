@@ -1,7 +1,8 @@
 # Presentation & Viva Defense Guide: Eigen Faces (Turk & Pentland, 1991)
 
 > **Presenter**: **Shashank M T** | **UUCMS No.**: **U01BH25C0174**  
-> **Course**: **BCA(AI)** | **Subject**: **Machine Learning**  
+> **Course Lecturer**: **Ragunandan B** (*Guest Lecturer – Introduction to Machine Learning*)  
+> **Course**: **BCA(AI) – 3rd Semester, 2nd Year** | **Subject**: **Machine Learning**  
 > **Institution**: **Pooja Bhagavat Mahajana First Grade College**  
 > **Submission Date**: **October 15, 2026**  
 > **GitHub Repository**: [https://github.com/shashank-emty/Eigen-faces](https://github.com/shashank-emty/Eigen-faces)  

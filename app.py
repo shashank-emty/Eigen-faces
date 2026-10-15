@@ -73,6 +73,19 @@ def serve_report():
         return f.read()
 
 
+@app.route("/slides")
+def serve_slides():
+    slides_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "slides.html")
+    with open(slides_path, "r", encoding="utf-8") as f:
+        return f.read()
+
+
+@app.route("/slides/download")
+def download_slides_pptx():
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    return send_from_directory(root_dir, "EigenFaces_Presentation.pptx", as_attachment=True)
+
+
 @app.route("/results/<path:filename>")
 def serve_results(filename):
     results_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")

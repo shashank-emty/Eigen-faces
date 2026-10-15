@@ -28,33 +28,36 @@ Designed specifically for individual student project demonstration, oral viva de
    - Perturbation & Robustness Analysis under Gaussian noise and occlusions (sunglasses/mask).
    - Accuracy vs. $K$ dimensional tradeoff curve.
 
+## ⚡ Super Simple Quickstart
+
+The entire project is structured to be extremely simple and self-contained:
+1. **Main Code**: [`main.py`](file:///Users/emty/balls/eigen_faces/main.py) contains all algorithms, PCA calculations, Turk-Pentland trick, and test cases in a single, clean file.
+2. **Dataset**: `data/olivetti_py3.pkz` is bundled locally inside the project (400 face photos, 40 subjects, 64x64).
+3. **Interactive Showcase**: [`index.html`](file:///Users/emty/balls/eigen_faces/index.html) can be opened in any web browser to showcase the code, algorithms, and visual graphs.
+
+### Run in Terminal:
+```bash
+python3 main.py
+```
+
+### View Project & Code Showcase:
+Simply double-click [`index.html`](file:///Users/emty/balls/eigen_faces/index.html) or open it in your browser!
+
 ---
 
-## 📁 Project Architecture
+## 📁 Simple Project Structure
 
 ```
 eigen_faces/
-├── src/
-│   ├── __init__.py
-│   ├── eigenfaces.py         # Pure NumPy implementation of Turk & Pentland (1991)
-│   ├── dataset.py            # Olivetti benchmark loader & non-face generator
-│   ├── evaluate.py           # Quantitative benchmarks & metric evaluations
-│   └── visualizer.py         # Scientific plotting functions
-├── tests/
-│   └── test_eigenfaces.py    # Unit tests verifying mathematical equivalence & orthonormality
-├── templates/
-│   └── index.html            # Web presentation dashboard interface
-├── results/                  # Generated presentation figures (PNG)
-│   ├── 01_eigenfaces_gallery.png
-│   ├── 02_eigenvalue_scree_plot.png
-│   ├── 03_face_reconstruction.png
-│   ├── 04_decision_space_geometry.png
-│   ├── 05_robustness_analysis.png
-│   └── 06_accuracy_vs_k.png
-├── demo.py                   # Automated end-to-end presentation demo script
-├── app.py                    # Interactive web dashboard server (Flask)
-├── PRESENTATION_GUIDE.md     # 10-minute presentation guide & Viva defense Q&A
-└── README.md                 # Project documentation
+├── main.py                   # ⭐ Main code with all algorithms (Turk & Pentland 1991)
+├── index.html                # ⭐ Standalone HTML showcase for code, math & graphs
+├── data/
+│   └── olivetti_py3.pkz      # ⭐ Bundled AT&T / Olivetti Face Dataset (offline)
+├── results/
+│   └── bw/                   # High-contrast figures (Eigenfaces gallery, scree plot, etc.)
+├── REPORT.html               # Comprehensive print-ready university report (B&W compatible)
+├── REPORT.md                 # Markdown version of full university report
+└── requirements.txt          # Python dependencies (numpy, scipy, scikit-learn, joblib)
 ```
 
 ---
@@ -148,3 +151,29 @@ See the detailed **[PRESENTATION_GUIDE.md](file:///Users/emty/balls/eigen_faces/
 - Slide-by-slide 10-minute script.
 - Answers to typical examiner questions (e.g., *Why $A^T A$ instead of $A A^T$?*, *Eigenfaces vs. Fisherfaces*, *Why do eigenfaces look ghostly?*).
 - Mathematical proof derivations.
+
+### 📽️ Presentation Slides (2 Ready-to-Use Formats)
+
+1. **Widescreen PowerPoint Presentation (`EigenFaces_Presentation.pptx`)**:
+   - 13 comprehensive, publication-quality 16:9 slides.
+   - Includes full presenter and institutional metadata (Shashank M T, UUCMS No. U01BH25C0174, BCA(AI), Pooja Bhagavat Mahajana First Grade College, Course Lecturer Ragunandan B).
+   - High-resolution figures embedded directly from `results/`.
+   - Regenerate anytime with:
+     ```bash
+     python generate_pptx.py
+     ```
+   - Open on Mac:
+     ```bash
+     open EigenFaces_Presentation.pptx
+     ```
+
+2. **Interactive Browser Slide Deck (`slides.html`)**:
+   - Open instantly in any browser:
+     ```bash
+     open slides.html
+     ```
+   - Keyboard arrows (◄ / ►) or Space to advance.
+   - Press **F** for Fullscreen mode.
+   - Press **N** to show/hide Speaker Notes & Viva Defense talking points.
+   - Press **P** or click the print icon to export directly as a 16:9 PDF.
+   - Live rendered KaTeX formulas ($L = A^T A$, $\epsilon_d$, $\epsilon_c$).

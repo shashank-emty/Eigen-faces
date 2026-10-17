@@ -41,3 +41,10 @@ env/
 .vscode/
 *.swp
 *.swo
+
+# Backups and temporary files
+*_backup.py
+*_old.py
+*.bak
+*.tmp
+

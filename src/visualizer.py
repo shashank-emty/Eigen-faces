@@ -243,12 +243,23 @@ def plot_decision_space(
 
     ax.text(
         th_f + (max_x - th_f) * 0.5,
-        max_y * 0.5,
-        r"ZONE 3: NOT A FACE" + "\n" + r"($\epsilon_d \geq \theta_f$)",
+        th_c + (max_y - th_c) * 0.5,
+        r"ZONE 3: NOT A FACE" + "\n" + r"($\epsilon_d \geq \theta_f, \epsilon_c \geq \theta_c$)",
         ha="center",
         va="center",
         bbox=dict(boxstyle="round,pad=0.4", fc="#ffebee", ec="#c62828", alpha=0.8),
         fontsize=9,
+        fontweight="bold",
+    )
+
+    ax.text(
+        th_f + (max_x - th_f) * 0.5,
+        th_c * 0.5,
+        r"ZONE 4: NOT A FACE" + "\n" + r"(False Match: $\epsilon_d \geq \theta_f, \epsilon_c < \theta_c$)",
+        ha="center",
+        va="center",
+        bbox=dict(boxstyle="round,pad=0.4", fc="#fff3e0", ec="#f57c00", alpha=0.8),
+        fontsize=8.5,
         fontweight="bold",
     )
 

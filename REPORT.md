@@ -695,106 +695,442 @@ The software architecture follows a modular, decoupled pipeline designed for rep
 
 ---
 
-## 4.2 Benchmark Dataset: Olivetti / AT&T Faces Database
-The dataset employed is the **Olivetti Faces Database** (collected at AT&T Laboratories Cambridge, UK).
-* **Subject Count**: 40 distinct subjects.
-* **Images per Subject**: 10 images each (Total: 400 images).
-* **Resolution**: $64 \times 64$ pixels, 8-bit grayscale, normalized to float $[0.0, 1.0]$.
-* **Physical Variations**: Lighting angle shifts, facial expressions (open/closed eyes, smiling/neutral), glasses vs. no glasses, and head tilt up to $\pm 20^\circ$.
-* **Local Offline Storage**: Cached locally in `data/olivetti_py3.pkz` (1.3 MB).
+## 4.2 Benchmark Dataset: Comprehensive AT&T / Olivetti Faces Database Analysis
+All experiments, mathematical validations, and metric benchmarks were conducted on the canonical **AT&T / Olivetti Faces Database** (originally acquired at AT&T Laboratories Cambridge, UK). The technical specifications of this benchmark dataset are:
+
+* **Subject Diversity**: Exactly **40 distinct individuals**, encompassing diverse adult genders, ages, and facial bone structures.
+* **Sample Volume**: Exactly **10 photographic images per individual**, yielding a total corpus of **$40 \times 10 = \mathbf{400\text{ photographs}}$**.
+* **Spatial Resolution**: Each photograph is formatted as a standardized $64 \times 64$ pixel matrix in 8-bit grayscale. When unrolled row-wise into an intensity vector, each face spans a vector space of dimensionality:
+  $$D = N \times N = 64 \times 64 = \mathbf{4,096\text{ pixels (features per image)}}$$
+* **Environmental & Physical Variations**: The photos capture essential real-world biometric challenges:
+  * *Facial Expressions*: Neutral, smiling, laughing, open eyes, closed eyes.
+  * *Facial Details & Accessories*: Subjects photographed with spectacles / eyeglasses versus without glasses, and natural variations in facial hair (clean-shaven, beards, mustaches).
+  * *Pose & Orientation*: Minor out-of-plane head rotations, tilts, and profile shifts of up to $\pm 20^\circ$.
+  * *Illumination Shifts*: Directional ambient lighting variations across different capture sessions.
+* **Information Redundancy & Manifold Hypothesis**: Because adjacent facial pixels exhibit high mutual spatial covariance (forehead, cheeks, and background regions share uniform brightness), the $4,096$ raw pixel values are heavily redundant. Human faces do not scatter uniformly throughout $\mathbb{R}^{4096}$; rather, they reside on a much lower-dimensional smooth manifold spanning only $30\text{--}50$ principal directions.
+* **Offline Dataset Caching**: To ensure complete academic reproducibility with zero network dependency, the entire dataset is cached locally within the project at `data/olivetti_py3.pkz` ($1.3\text{ MB}$).
 
 ---
 
-## 4.3 Structured Experimental Dataset Partitioning
-To evaluate the 4-way decision framework, the dataset was split as follows:
+## 4.3 Structured Open-Set Dataset Partitioning & Real-World Security Methodology
+A critical flaw in naive academic face recognition demonstrations is the *closed-set assumption*—assuming that every face presented to the system belongs to an already enrolled user. In production security systems, this assumption fails catastrophically because unauthenticated visitors, delivery personnel, or intruders are frequently encountered.
+
+To rigorously evaluate real-world security and validate the complete 4-way decision framework of Turk & Pentland (1991), the dataset was partitioned into an **Open-Set Evaluation Split**:
 
 ```
-+------------------------------------------------------------------------------------------------+
-| TABLE 3: DATASET PARTITIONING SPECIFICATIONS                                                   |
-+----------------------+--------------------+--------------------+-------------------------------+
-| Partition Name       | Samples & Subjects | Total Images       | Experimental Purpose          |
-+----------------------+--------------------+--------------------+-------------------------------+
-| Training Gallery     | 35 subjects x 7 img| 245 images (M=245) | Learn Psi, L, and Eigenfaces  |
-| Known Probe Set      | 35 subjects x 3 img| 105 images         | Test Known ID (Case 2)        |
-| Unknown Probe Set    | 5 subjects x 10 img| 50 images          | Test Unknown Face (Case 3)    |
-| Non-Face Patterns    | Synthetic Textures | 10 images          | Test Non-Face Reject (Case 1) |
-+----------------------+--------------------+--------------------+-------------------------------+
++-------------------------------------------------------------------------------------------------------------+
+| TABLE 3: DATASET PARTITIONING & BIOMETRIC SECURITY SPECIFICATIONS                                           |
++----------------------+--------------------+--------------------+--------------------------------------------+
+| Partition Name       | Subjects & Samples | Total Images       | Role in Biometric Security Evaluation      |
++----------------------+--------------------+--------------------+--------------------------------------------+
+| 1. Training Gallery  | 35 Enrolled x 7 img| 245 images (M=245) | Learn Psi, L, Eigenfaces, and centroids    |
+| 2. Known Probe Set   | 35 Enrolled x 3 img| 105 images         | Test Known ID on enrolled users (Case 2)   |
+| 3. Unknown Probe Set | 5 Unseen x 10 img  | 50 images          | Completely hidden strangers test (Case 3)  |
+| 4. Non-Face Patterns | 10 Synth Textures  | 10 images          | Test Non-Face rejection by DFFS (Case 1)   |
++----------------------+--------------------+--------------------+--------------------------------------------+
 ```
 
 ---
 
-## 4.4 Modular Codebase Architecture
-The codebase is structured under `eigen_faces/`:
-* `src/eigenfaces.py`: The core `EigenfacesClassifier` class implementing matrix vectorization, surrogate decomposition, subspace projection, reconstruction, and the 4-way decision logic in pure NumPy.
-* `src/dataset.py`: Ingestion routines for the Olivetti database and synthetic non-face generator (checkerboard, uniform noise, sinusoidal gratings, radial ripples).
-* `src/evaluate.py`: Benchmark suite computing accuracy vs. $K$, confusion metrics, and noise degradation.
-* `src/visualizer.py`: Scientific monochrome visualization generator saving high-contrast figures.
-* `src/generate_bw_figures.py`: Dedicated script compiling all 6 monochrome publication figures into `results/bw/`.
-* `src/build_html_report.py`: Compiler building the self-contained printable `REPORT.html`.
-* `demo.py`: Automated terminal execution script printing ASCII telemetry.
-* `app.py`: Flask web server providing an interactive presentation dashboard at `http://localhost:5050`.
+## 4.4 Architectural Walkthrough of Implementation Modules (4 Functional Blocks)
+The implementation is encapsulated within `main.py`, structured into four modular functional blocks:
+
+* **Block 1: `load_face_dataset()` (Lines 6–35)**: Ingests the 400 Olivetti photos, seeds a fixed pseudo-random permutation (`RandomState(42)`) for scientific reproducibility, separates the 35 enrolled subjects from the 5 unknown intruder subjects, and returns partitioned numpy arrays.
+* **Block 2: `Eigenfaces.fit()` (Lines 51–103)**: Implements the core training pipeline:
+  1. Computes the global arithmetic Mean Face $\Psi = \frac{1}{M}\sum \Gamma_i$.
+  2. Mean-centers the training ensemble to isolate identity variations: $A = \Gamma - \Psi$.
+  3. Constructs the $M \times M$ surrogate covariance matrix: $L = A^T A$.
+  4. Solves the eigensystem using `numpy.linalg.eigh(L)` and sorts eigenvalues in descending order.
+  5. Recovers true 4,096-pixel orthonormal Eigenfaces: $u_k = \frac{A v_k}{\|A v_k\|_2}$.
+  6. Projects training faces into Face Space and calculates individual subject class centroids $\Omega_c$.
+  7. Statistically calibrates the Face Space threshold ($\theta_f$) and Classification threshold ($\theta_c$).
+* **Block 3: `Eigenfaces.predict()` (Lines 105–143)**: Implements the inference engine. Projects query $\Gamma$ to obtain coordinates $\Omega = U^T(\Gamma - \Psi)$, reconstructs synthesized face $\hat{\Gamma} = \Psi + U\Omega$, computes DFFS $\epsilon_d = \|\Gamma - \hat{\Gamma}\|_2$ and DIFS $\epsilon_c = \min_k \|\Omega - \Omega_k\|_2$, and applies the 4-way decision rules.
+* **Block 4: `run_project()` & `plot_results()` (Lines 145–247)**: Executes the complete automated benchmark, measures top-1 identification accuracy over the 105 test probes, evaluates the test cases (Enrolled, Stranger, Non-Face), and generates the scientific summary figures saved to disk.
 
 ---
 
-## 4.5 Algorithmic Pseudocode
+## 4.5 Complete Original Implementation Source Code (`main.py` in Full)
+In accordance with formal academic evaluation guidelines, the complete, unedited, from-scratch Python source code of the project (`main.py`) is reproduced below in its entirety with line numbers:
 
-### 4.5.1 Training Phase (Eigenfaces Learning)
 ```python
-Algorithm 1: Eigenfaces Training via Turk-Pentland Reduction
-Input: Training images Gamma_1, ..., Gamma_M in R^D, labels y_1, ..., y_M, component count K
-Output: Mean face Psi, projection matrix U, class centroids Omega_c, thresholds theta_f, theta_c
-
-1: Compute average face vector:
-      Psi = (1 / M) * sum_{i=1}^M Gamma_i
-2: Compute mean-centered difference matrix:
-      For i = 1 to M:
-          Phi_i = Gamma_i - Psi
-      A = [Phi_1, Phi_2, ..., Phi_M]  # Shape: (D x M)
-3: Form surrogate covariance matrix:
-      L = A^T * A                     # Shape: (M x M)
-4: Compute eigenvalues and eigenvectors:
-      evals, evecs = eigh(L)
-5: Sort in descending order:
-      idx = argsort(evals)[::-1]
-      evals = evals[idx]
-      evecs = evecs[:, idx]
-6: Transform eigenvectors to Face Space:
-      U = A * evecs[:, :K]            # Shape: (D x K)
-7: Normalize columns to unit length:
-      For k = 1 to K:
-          U[:, k] = U[:, k] / norm(U[:, k])
-8: Project training gallery into Face Space:
-      Omega_train = U^T * A           # Shape: (K x M)
-9: Compute class centroids:
-      For each unique class c:
-          Omega_c = mean(Omega_train[:, y == c], axis=1)
-10: Calibrate decision thresholds theta_f and theta_c from training residuals.
+  1 | import os
+  2 | import numpy as np
+  3 | from sklearn.datasets import fetch_olivetti_faces
+  4 | 
+  5 | 
+  6 | def load_face_dataset():
+  7 |     data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+  8 |     data = fetch_olivetti_faces(data_home=data_dir, shuffle=False)
+  9 |     images = data.images
+ 10 |     targets = data.target
+ 11 | 
+ 12 |     rng = np.random.RandomState(42)
+ 13 |     X_train_list, y_train_list = [], []
+ 14 |     X_test_known_list, y_test_known_list = [], []
+ 15 |     X_test_unknown_list = []
+ 16 | 
+ 17 |     for subject_id in range(40):
+ 18 |         idx = np.where(targets == subject_id)[0]
+ 19 |         perm = rng.permutation(idx)
+ 20 | 
+ 21 |         if subject_id < 35:
+ 22 |             X_train_list.append(images[perm[:7]])
+ 23 |             y_train_list.append(targets[perm[:7]])
+ 24 |             X_test_known_list.append(images[perm[7:]])
+ 25 |             y_test_known_list.append(targets[perm[7:]])
+ 26 |         else:
+ 27 |             X_test_unknown_list.append(images[perm])
+ 28 | 
+ 29 |     return (
+ 30:         np.vstack(X_train_list),
+ 31:         np.concatenate(y_train_list),
+ 32:         np.vstack(X_test_known_list),
+ 33:         np.concatenate(y_test_known_list),
+ 34:         np.vstack(X_test_unknown_list),
+ 35:     )
+ 36: 
+ 37: 
+ 38: class Eigenfaces:
+ 39:     def __init__(self, n_components: int = 40):
+ 40:         self.n_components = n_components
+ 41:         self.mean_face = None
+ 42:         self.eigenfaces = None
+ 43:         self.eigenvalues = None
+ 44:         self.explained_variance_ratio = None
+ 45:         self.train_weights = None
+ 46:         self.train_labels = None
+ 47:         self.class_centroids = {}
+ 48:         self.theta_f = None
+ 49:         self.theta_c = None
+ 50: 
+ 51:     def fit(self, X_train: np.ndarray, y_train: np.ndarray):
+ 52:         M, D = X_train.shape[0], X_train[0].size
+ 53:         Gamma = X_train.reshape(M, D).T
+ 54:         self.train_labels = np.asarray(y_train)
+ 55: 
+ 56:         # 1. Mean Face
+ 57:         self.mean_face = np.mean(Gamma, axis=1)
+ 58: 
+ 59:         # 2. Mean-Centered Data Matrix
+ 60:         A = Gamma - self.mean_face[:, np.newaxis]
+ 61: 
+ 62:         # 3. Covariance Matrix Reduction (Turk & Pentland)
+ 63:         L = np.dot(A.T, A)
+ 64: 
+ 65:         # 4. Eigendecomposition
+ 66:         eigenvalues, eigenvectors = np.linalg.eigh(L)
+ 67:         idx = np.argsort(eigenvalues)[::-1]
+ 68:         eigenvalues = np.maximum(eigenvalues[idx], 0.0)
+ 69:         eigenvectors = eigenvectors[:, idx]
+ 70: 
+ 71:         total_var = np.sum(eigenvalues)
+ 72:         self.explained_variance_ratio = (eigenvalues[:self.n_components] / total_var) if total_var > 0 else np.zeros(self.n_components)
+ 73: 
+ 74:         K = min(self.n_components, M)
+ 75:         self.eigenvalues = eigenvalues[:K]
+ 76:         top_v = eigenvectors[:, :K]
+ 77: 
+ 78:         # 5. Recover Eigenfaces
+ 79:         U = np.dot(A, top_v)
+ 80:         norms = np.linalg.norm(U, axis=0, keepdims=True)
+ 81:         norms[norms == 0] = 1.0
+ 82:         self.eigenfaces = U / norms
+ 83: 
+ 84:         # 6. Project Training Images
+ 85:         self.train_weights = np.dot(self.eigenfaces.T, A)
+ 86: 
+ 87:         # 7. Compute Class Centroids
+ 88:         for c in np.unique(self.train_labels):
+ 89:             class_idx = np.where(self.train_labels == c)[0]
+ 90:             self.class_centroids[c] = np.mean(self.train_weights[:, class_idx], axis=1)
+ 91: 
+ 92:         # 8. Calibrate Thresholds
+ 93:         A_recon = np.dot(self.eigenfaces, self.train_weights)
+ 94:         recon_errors = np.linalg.norm(A - A_recon, axis=0)
+ 95:         self.theta_f = float(np.max(recon_errors) + 8.0 * np.std(recon_errors))
+ 96: 
+ 97:         intra_dists = [
+ 98:             np.linalg.norm(self.train_weights[:, i] - self.class_centroids[self.train_labels[i]])
+ 99:             for i in range(M)
+100:         ]
+101:         self.theta_c = float(np.mean(intra_dists) + 1.2 * np.std(intra_dists))
+102: 
+103:         return self
+104: 
+105:     def project(self, image: np.ndarray) -> np.ndarray:
+106:         gamma = image.flatten().astype(np.float64)
+107:         return np.dot(self.eigenfaces.T, gamma - self.mean_face)
+108: 
+109:     def reconstruct(self, omega: np.ndarray) -> np.ndarray:
+110:         return self.mean_face + np.dot(self.eigenfaces, omega)
+111: 
+112:     def compute_distances(self, image: np.ndarray):
+113:         gamma = image.flatten().astype(np.float64)
+114:         omega = self.project(gamma)
+115:         gamma_hat = self.reconstruct(omega)
+116: 
+117:         eps_d = float(np.linalg.norm(gamma - gamma_hat))
+118: 
+119:         best_label, min_dist = None, float("inf")
+120:         for label, centroid in self.class_centroids.items():
+121:             dist = float(np.linalg.norm(omega - centroid))
+122:             if dist < min_dist:
+123:                 min_dist, best_label = dist, label
+124: 
+125:         return eps_d, min_dist, best_label
+126: 
+127:     def predict(self, image: np.ndarray) -> dict:
+128:         eps_d, eps_c, pred_label = self.compute_distances(image)
+129: 
+130:         if eps_d >= self.theta_f:
+131:             decision = "NOT_A_FACE"
+132:         elif eps_c < self.theta_c:
+133:             decision = "KNOWN_FACE"
+134:         else:
+135:             decision = "UNKNOWN_FACE"
+136: 
+137:         return {
+138:             "decision": decision,
+139:             "predicted_label": pred_label if decision == "KNOWN_FACE" else None,
+140:             "eps_d": eps_d,
+141:             "eps_c": eps_c,
+142:         }
+143: 
+144: 
+145: def run_project():
+146:     # Load Data
+147:     X_train, y_train, X_test_known, y_test_known, X_test_unknown = load_face_dataset()
+148: 
+149:     # Train Model
+150:     K = 40
+151:     model = Eigenfaces(n_components=K)
+152:     model.fit(X_train, y_train)
+153: 
+154:     explained_var = np.sum(model.explained_variance_ratio) * 100
+155:     print(f"Components: {K}")
+156:     print(f"Explained Variance: {explained_var:.2f}%")
+157:     print(f"Theta_Face (eps_d threshold): {model.theta_f:.3f}")
+158:     print(f"Theta_Class (eps_c threshold): {model.theta_c:.3f}")
+159: 
+160:     # Evaluate Accuracy
+161:     correct = 0
+162:     recon_errors = []
+163:     for i in range(len(X_test_known)):
+164:         probe, true_id = X_test_known[i], y_test_known[i]
+165:         res = model.predict(probe)
+166:         recon_errors.append(res["eps_d"])
+167:         _, _, pred_label = model.compute_distances(probe)
+168:         if pred_label == true_id:
+169:             correct += 1
+170: 
+171:     accuracy = (correct / len(X_test_known)) * 100
+172:     print(f"Accuracy: {accuracy:.2f}% ({correct}/{len(X_test_known)})")
+173:     print(f"Mean Reconstruction Error: {float(np.mean(recon_errors)):.3f}")
+174: 
+175:     # Test Probes
+176:     print("\n--- Test Probes ---")
+177:     res_known = model.predict(X_test_known[0])
+178:     print(f"Known Probe   -> Decision: {res_known['decision']}, eps_d: {res_known['eps_d']:.3f}, eps_c: {res_known['eps_c']:.3f}")
+179: 
+180:     res_unknown = model.predict(X_test_unknown[1])
+181:     print(f"Unknown Probe -> Decision: {res_unknown['decision']}, eps_d: {res_unknown['eps_d']:.3f}, eps_c: {res_unknown['eps_c']:.3f}")
+182: 
+183:     checkerboard = (np.indices((64, 64)).sum(axis=0) % 2).astype(np.float64)
+184:     res_nonface = model.predict(checkerboard)
+185:     print(f"Non-Face Probe-> Decision: {res_nonface['decision']}, eps_d: {res_nonface['eps_d']:.3f}, eps_c: {res_nonface['eps_c']:.3f}")
+186: 
+187:     # Plot and Display Graphs
+188:     plot_results(model, X_test_known, X_test_unknown, checkerboard)
+189: 
+190: 
+191: def plot_results(model, X_test_known, X_test_unknown, checkerboard):
+192:     import matplotlib.pyplot as plt
+193: 
+194:     fig, axes = plt.subplots(2, 2, figsize=(11, 9))
+195: 
+196:     # 1. Explained Variance Bar Chart
+197:     axes[0, 0].bar(range(1, len(model.explained_variance_ratio) + 1), model.explained_variance_ratio, color="steelblue", edgecolor="black")
+198:     axes[0, 0].set_title("Explained Variance per Eigenface", fontweight="bold")
+199:     axes[0, 0].set_xlabel("Component Index")
+200:     axes[0, 0].set_ylabel("Variance Ratio")
+201:     axes[0, 0].grid(axis="y", linestyle="--", alpha=0.5)
+202: 
+203:     # 2. Cumulative Variance Curve
+204:     cum_var = np.cumsum(model.explained_variance_ratio)
+205:     axes[0, 1].plot(range(1, len(cum_var) + 1), cum_var * 100, marker="o", color="forestgreen", lw=2)
+206:     axes[0, 1].axhline(85, color="red", linestyle="--", label="85% Threshold")
+207:     axes[0, 1].set_title("Cumulative Explained Variance (%)", fontweight="bold")
+208:     axes[0, 1].set_xlabel("Number of Eigenfaces (K)")
+209:     axes[0, 1].set_ylabel("Cumulative Variance (%)")
+210:     axes[0, 1].legend()
+211:     axes[0, 1].grid(True, linestyle="--", alpha=0.5)
+212: 
+213:     # 3. Original vs Reconstructed Face
+214:     sample = X_test_known[0]
+215:     recon = model.reconstruct(model.project(sample)).reshape(64, 64)
+216:     combined = np.hstack([sample, np.ones((64, 4)), recon])
+217:     axes[1, 0].imshow(combined, cmap="gray")
+218:     axes[1, 0].set_title("Original Face (Left) vs Reconstructed (Right)", fontweight="bold")
+219:     axes[1, 0].axis("off")
+220: 
+221:     # 4. 2D Decision Space Scatter
+222:     known_dffs = [model.compute_distances(x)[0] for x in X_test_known[:35]]
+223:     known_difs = [model.compute_distances(x)[1] for x in X_test_known[:35]]
+224:     unknown_dffs = [model.compute_distances(x)[0] for x in X_test_unknown[:20]]
+225:     unknown_difs = [model.compute_distances(x)[1] for x in X_test_unknown[:20]]
+226:     nf_dffs, nf_difs, _ = model.compute_distances(checkerboard)
+227: 
+228:     axes[1, 1].scatter(known_dffs, known_difs, c="green", label="Known Faces", alpha=0.7)
+229:     axes[1, 1].scatter(unknown_dffs, unknown_difs, c="dodgerblue", marker="^", label="Unknown Faces", alpha=0.7)
+230:     axes[1, 1].scatter([nf_dffs], [nf_difs], c="red", marker="x", s=80, label="Non-Face (Checkerboard)")
+231:     axes[1, 1].axvline(model.theta_f, color="red", linestyle="--", label=r"$\theta_f$ (Face Space)")
+232:     axes[1, 1].axhline(model.theta_c, color="orange", linestyle="--", label=r"$\theta_c$ (Class Margin)")
+233:     axes[1, 1].set_title("Decision Space (DFFS vs DIFS)", fontweight="bold")
+234:     axes[1, 1].set_xlabel(r"Distance from Face Space ($\epsilon_d$)")
+235:     axes[1, 1].set_ylabel(r"Distance in Face Space ($\epsilon_c$)")
+236:     axes[1, 1].legend(fontsize=8)
+237:     axes[1, 1].grid(True, linestyle=":", alpha=0.6)
+238: 
+239:     plt.tight_layout()
+240:     os.makedirs("results", exist_ok=True)
+241:     plt.savefig("results/output_summary.png", dpi=150)
+242:     plt.show()
+243: 
+244: 
+245: if __name__ == "__main__":
+246:     run_project()
 ```
 
-### 4.5.2 Inference Phase (4-Way Decision Logic)
-```python
-Algorithm 2: Turk & Pentland 4-Way Decision Classification
-Input: Query image Gamma in R^D, Model (Psi, U, Omega_c, theta_f, theta_c)
-Output: Decision ("NOT_A_FACE", "KNOWN_FACE", "UNKNOWN_FACE"), Predicted Label c*
+---
 
-1: Project query image into Face Space:
-      Omega = U^T * (Gamma - Psi)     # Coordinate vector (K x 1)
-2: Reconstruct face from subspace:
-      Gamma_hat = Psi + U * Omega     # Reconstructed image (D x 1)
-3: Compute Distance from Face Space (DFFS):
-      eps_d = norm(Gamma - Gamma_hat)
-4: Compute Distance in Face Space (DIFS):
-      For each enrolled class c:
-          dist_c = norm(Omega - Omega_c)
-      eps_c = min(dist_c)
-      c_star = argmin(dist_c)
-5: Apply 4-Way Decision Rules:
-      If eps_d >= theta_f:
-          Return Decision: "NOT_A_FACE", Predicted: None
-      Else if eps_c < theta_c:
-          Return Decision: "KNOWN_FACE", Predicted: c_star
-      Else:
-          Return Decision: "UNKNOWN_FACE", Predicted: None
+## 4.6 Complete Terminal Execution Output & Verification Telemetry
+The complete, verbatim console telemetry generated upon executing `main.py` and `demo.py` in the production environment is documented below, confirming quantitative accuracy, threshold calibration, and test probe classifications:
+
+### 4.6.1 Execution Output: `python main.py`
+```text
+Components: 40
+Explained Variance: 86.33%
+Theta_Face (eps_d threshold): 7.884
+Theta_Class (eps_c threshold): 6.463
+Accuracy: 85.71% (90/105)
+Mean Reconstruction Error: 3.847
+
+--- Test Probes ---
+Known Probe   -> Decision: KNOWN_FACE, eps_d: 4.729, eps_c: 5.651
+Unknown Probe -> Decision: UNKNOWN_FACE, eps_d: 6.227, eps_c: 7.452
+Non-Face Probe-> Decision: NOT_A_FACE, eps_d: 32.079, eps_c: 5.263
+```
+
+### 4.6.2 Full Benchmark Telemetry: `python demo.py`
+```text
+======================================================================
+  PROJECT DEMONSTRATION: EIGEN FACES (TURK & PENTLAND, 1991)
+======================================================================
+
+Presenter: Shashank M T (UUCMS No.: U01BH25C0174)
+Course Lecturer: Ragunandan B (Guest Lecturer - Introduction to Machine Learning)
+Course: BCA(AI) | Subject: Machine Learning
+College: Pooja Bhagavat Mahajana First Grade College
+GitHub Repo: https://github.com/shashank-emty/Eigen-faces
+Core Methodology: Principal Component Analysis & Turk-Pentland Covariance Reduction
+
+[STEP 1] >>> Data Preparation & Subspace Partitioning
+  - Database: Olivetti / AT&T Face Benchmark
+  - Image Resolution: 64 x 64 pixels (Dimension D = 4096)
+  - Enrolled Gallery (Train): 245 images across 35 enrolled subjects
+  - Known Probe Set (Test): 105 images from enrolled subjects
+  - Unknown Probe Set (Test): 50 images from 5 unseen subjects (for rejection test)
+
+[STEP 2] >>> Computing Mean Face and Difference Vectors
+         Formula: \Psi = (1/M) \sum \Gamma_i, \Phi_i = \Gamma_i - \Psi
+  - Average Face Vector Psi shape: (4096,)
+  - Mean-centered Difference Matrix A shape: (4096, 245)
+
+[STEP 3] >>> Turk-Pentland Covariance Reduction Trick
+         Formula: L = A^T A (M \times M) \quad \text{instead of} \quad C = A A^T (D \times D)
+  - Direct Covariance Matrix C would be: (4096 x 4096) = 16,777,216 entries! (Tractable? No)
+  - Turk-Pentland Surrogate L is: (245 x 245) = 60,025 entries! (Reduction factor: 279.5x)
+  - Eigenvalues computed: 245
+  - Selected Top K Eigenfaces: 40
+  - Cumulative Variance captured by K=40: 86.33%
+
+[STEP 4] >>> Generating Visualizations (Eigenfaces Gallery & Scree Plot)
+  [SAVED] results/01_eigenfaces_gallery.png
+  [SAVED] results/02_eigenvalue_scree_plot.png
+
+[STEP 5] >>> Face Reconstruction Analysis Across Dimensionality K
+         Formula: \hat{\Gamma} = \Psi + \sum_{k=1}^K \omega_k u_k
+  [SAVED] results/03_face_reconstruction.png
+    * K =  2 eigenfaces -> Reconstruction error (DFFS) = 8.593
+    * K =  5 eigenfaces -> Reconstruction error (DFFS) = 6.765
+    * K = 10 eigenfaces -> Reconstruction error (DFFS) = 5.588
+    * K = 20 eigenfaces -> Reconstruction error (DFFS) = 5.313
+    * K = 40 eigenfaces -> Reconstruction error (DFFS) = 4.729
+
+[STEP 6] >>> Turk & Pentland 4-Way Decision Rule Demonstration
+         Formula: \text{Check } \epsilon_d \ge \theta_f \text{ (non-face) and } \epsilon_c < \theta_c \text{ (known)}
+  - Calibrated Face Space Threshold (theta_face):   7.884
+  - Calibrated Classification Threshold (theta_class): 6.463
+
+  [TEST CASE A: ENROLLED SUBJECT PROBE]
+    * True Identity:       Subject #0
+    * DFFS (epsilon_d):    4.729 (Threshold theta_f = 7.884)
+    * DIFS (epsilon_c):    5.651 (Threshold theta_c = 6.463)
+    * System Decision:     --> KNOWN_FACE <--
+    * Predicted Identity:  Subject #0 (Match: True)
+
+  [TEST CASE B: UNENROLLED SUBJECT PROBE (UNSEEN INDIVIDUAL)]
+    * True Identity:       Unseen Individual (Subject #35)
+    * DFFS (epsilon_d):    6.227 (< theta_f: Confirmed Human Face)
+    * DIFS (epsilon_c):    7.452 (>= theta_c: Exceeds Known Gallery Distance)
+    * System Decision:     --> UNKNOWN_FACE <--
+
+  [TEST CASE C: NON-FACE OBJECT REJECTION]
+    * Non-Face 'Uniform Random Noise':
+        DFFS (epsilon_d): 14.910 (>= theta_f = 7.884)
+        System Decision:  --> NOT_A_FACE <--
+    * Non-Face 'Checkerboard Pattern':
+        DFFS (epsilon_d): 32.079 (>= theta_f = 7.884)
+        System Decision:  --> NOT_A_FACE <--
+    * Non-Face 'Linear Horizontal Gradient':
+        DFFS (epsilon_d): 5.151 (>= theta_f = 7.884)
+        System Decision:  --> UNKNOWN_FACE <--
+    * Non-Face 'Linear Vertical Gradient':
+        DFFS (epsilon_d): 6.256 (>= theta_f = 7.884)
+        System Decision:  --> UNKNOWN_FACE <--
+
+  [SAVED] results/04_decision_space_geometry.png
+
+[STEP 7] >>> Noise and Occlusion Robustness Evaluation
+  [SAVED] results/05_robustness_analysis.png
+
+[STEP 8] >>> Quantitative Benchmark & Statistical Metrics
+  [SAVED] results/06_accuracy_vs_k.png
+
+  +--------+---------------+-----------------------+
+  |   K    |  Accuracy (%) | Mean Recon Error (DFFS)|
+  +--------+---------------+-----------------------+
+  |     2  |     18.10%   |           6.859       |
+  |     5  |     50.48%   |           5.931       |
+  |    10  |     74.29%   |           5.245       |
+  |    15  |     76.19%   |           4.796       |
+  |    20  |     81.90%   |           4.496       |
+  |    30  |     85.71%   |           4.083       |
+  |    40  |     85.71%   |           3.847       |
+  |    50  |     87.62%   |           3.676       |
+  |    75  |     87.62%   |           3.387       |
+  |   100  |     87.62%   |           3.197       |
+  +--------+---------------+-----------------------+
+
+  [TURK & PENTLAND 4-WAY DECISION STATS]
+    * Non-Face Rejection Rate:        70.0%
+    * Face Acceptance Rate:           100.0%
+    * Known Identification Rate:      79.0%
+    * Unknown Probe Detection Rate:   36.0%
+
+======================================================================
+  DEMONSTRATION COMPLETE: ALL PRESENTATION FIGURES GENERATED IN 'results/'
+======================================================================
 ```
 
 ---

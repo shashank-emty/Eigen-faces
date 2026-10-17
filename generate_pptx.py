@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """
-generate_pptx.py
-Generates a 16:9 widescreen presentation deck for the Eigenfaces Project.
+build_clean_pptx.py
+Builds a comprehensive, audience-facing 16:9 widescreen presentation deck for the Eigenfaces Project.
+Contains intuitive, detailed explanations of:
+  - How Eigenfaces are mathematically and visually derived (the linear combination recipe)
+  - How Projection and Reconstruction happen step-by-step
+  - How the 4-Way Decision framework evaluates faces vs. non-faces and known vs. unknown
+Designed for both the presenter to explain smoothly and the audience/evaluators to read effortlessly.
 """
 
 import os
@@ -14,22 +19,24 @@ from pptx.enum.shapes import MSO_SHAPE
 RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
 OUTPUT_PPTX = os.path.join(os.path.dirname(os.path.abspath(__file__)), "EigenFaces_Presentation.pptx")
 
-# Color Palette: Modern Deep Slate & Royal Navy Academic Theme
+# Palette: Academic Royal Navy, Clean Slate, Cyan, Amber & Emerald Accents
 NAVY_DARK = RGBColor(15, 23, 42)       # Slate 900
-NAVY_MEDIUM = RGBColor(30, 41, 59)     # Slate 800
-NAVY_ACCENT = RGBColor(37, 99, 235)    # Blue 600
-CYAN_ACCENT = RGBColor(6, 182, 212)    # Cyan 500
-GOLD_ACCENT = RGBColor(245, 158, 11)   # Amber 500
-GREEN_ACCENT = RGBColor(16, 185, 129)  # Emerald 500
+NAVY_CARD = RGBColor(30, 41, 59)      # Slate 800
+NAVY_ACCENT = RGBColor(37, 99, 235)   # Blue 600
+CYAN_ACCENT = RGBColor(6, 182, 212)   # Cyan 500
+AMBER_ACCENT = RGBColor(245, 158, 11) # Amber 500
+EMERALD_ACCENT = RGBColor(16, 185, 129) # Emerald 500
+ROSE_ACCENT = RGBColor(225, 29, 72)   # Rose 600
+
 TEXT_WHITE = RGBColor(255, 255, 255)
-TEXT_MUTED = RGBColor(148, 163, 184)   # Slate 400
-TEXT_DARK = RGBColor(30, 41, 59)
-BG_LIGHT = RGBColor(248, 250, 252)     # Slate 50
+TEXT_MUTED = RGBColor(148, 163, 184)  # Slate 400
+TEXT_DARK = RGBColor(30, 41, 59)      # Slate 800
+BG_LIGHT = RGBColor(248, 250, 252)    # Slate 50
 CARD_BG = RGBColor(255, 255, 255)
 CARD_BORDER = RGBColor(226, 232, 240)
 
 
-def create_deck():
+def build_deck():
     prs = Presentation()
     prs.slide_width = Inches(13.333)
     prs.slide_height = Inches(7.5)
@@ -43,19 +50,16 @@ def create_deck():
         return shape
 
     def add_header(slide, title_text, category="EIGENFACES • TURK & PENTLAND (1991)"):
-        # Header background bar
         hdr_bg = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, Inches(13.333), Inches(1.15))
         hdr_bg.fill.solid()
         hdr_bg.fill.fore_color.rgb = NAVY_DARK
         hdr_bg.line.fill.background()
 
-        # Accent line
         line = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, Inches(1.13), Inches(13.333), Inches(0.04))
         line.fill.solid()
         line.fill.fore_color.rgb = NAVY_ACCENT
         line.line.fill.background()
 
-        # Category pill text
         cat_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.12), Inches(11.5), Inches(0.28))
         tf_cat = cat_box.text_frame
         tf_cat.word_wrap = True
@@ -65,7 +69,6 @@ def create_deck():
         p_cat.font.bold = True
         p_cat.font.color.rgb = CYAN_ACCENT
 
-        # Title text
         title_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.38), Inches(11.5), Inches(0.65))
         tf_title = title_box.text_frame
         tf_title.word_wrap = True
@@ -86,730 +89,832 @@ def create_deck():
             card.line.fill.background()
         return card
 
-    # ==========================================
+    # =========================================================================
     # SLIDE 1: Title Slide
-    # ==========================================
+    # =========================================================================
     s1 = prs.slides.add_slide(blank_layout)
     add_bg(s1, NAVY_DARK)
 
-    # Decorative accent bar
     top_bar = s1.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0), Inches(0), Inches(13.333), Inches(0.15))
     top_bar.fill.solid()
     top_bar.fill.fore_color.rgb = NAVY_ACCENT
     top_bar.line.fill.background()
 
-    # Category Badge
-    badge = s1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(1.0), Inches(1.1), Inches(3.8), Inches(0.42))
-    badge.fill.solid()
-    badge.fill.fore_color.rgb = RGBColor(30, 41, 59)
-    badge.line.color.rgb = CYAN_ACCENT
-    badge.line.width = Pt(1)
-    tf_b = badge.text_frame
-    p_b = tf_b.paragraphs[0]
-    p_b.text = "MACHINE LEARNING PROJECT & VIVA DEFENSE"
-    p_b.font.size = Pt(9.5)
-    p_b.font.bold = True
-    p_b.font.color.rgb = CYAN_ACCENT
-    p_b.alignment = PP_ALIGN.CENTER
+    pill = s1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(1.0), Inches(0.9), Inches(5.0), Inches(0.42))
+    pill.fill.solid()
+    pill.fill.fore_color.rgb = NAVY_CARD
+    pill.line.color.rgb = CYAN_ACCENT
+    pill.line.width = Pt(1)
+    tf_p = pill.text_frame
+    p_p = tf_p.paragraphs[0]
+    p_p.text = "MACHINE LEARNING • TECHNICAL PAPER PRESENTATION"
+    p_p.font.size = Pt(9.5)
+    p_p.font.bold = True
+    p_p.font.color.rgb = CYAN_ACCENT
+    p_p.alignment = PP_ALIGN.CENTER
 
-    # Main Title
-    t_box = s1.shapes.add_textbox(Inches(1.0), Inches(1.75), Inches(11.3), Inches(1.8))
-    tf = t_box.text_frame
-    tf.word_wrap = True
-    p1 = tf.paragraphs[0]
-    p1.text = "Eigenfaces for Face Recognition"
-    p1.font.size = Pt(38)
+    t_box = s1.shapes.add_textbox(Inches(1.0), Inches(1.5), Inches(11.3), Inches(2.0))
+    tf1 = t_box.text_frame
+    tf1.word_wrap = True
+    p1 = tf1.paragraphs[0]
+    p1.text = "Eigenfaces for Recognition"
+    p1.font.size = Pt(40)
     p1.font.bold = True
     p1.font.color.rgb = TEXT_WHITE
 
-    p2 = tf.add_paragraph()
-    p2.text = "Implementation of Turk & Pentland (1991): Dimensionality Reduction & 4-Way Decision Space"
+    p2 = tf1.add_paragraph()
+    p2.text = "Dimensionality Reduction, Subspace Modeling & 4-Way Decision Framework"
     p2.font.size = Pt(18)
     p2.font.color.rgb = TEXT_MUTED
 
-    # Presenter Information Card
-    card_p = add_card(s1, Inches(1.0), Inches(3.85), Inches(5.4), Inches(2.8), NAVY_MEDIUM, NAVY_ACCENT)
-    tf_cp = card_p.text_frame
-    tf_cp.word_wrap = True
-    
-    p = tf_cp.paragraphs[0]
-    p.text = "STUDENT PRESENTER"
+    p3 = tf1.add_paragraph()
+    p3.text = "Implementation of the Landmark Paper by Matthew Turk & Alex Pentland (1991)"
+    p3.font.size = Pt(13)
+    p3.font.color.rgb = CYAN_ACCENT
+
+    # Presenter Card
+    c_s = add_card(s1, Inches(1.0), Inches(3.8), Inches(5.4), Inches(3.0), NAVY_CARD, NAVY_ACCENT)
+    tfs = c_s.text_frame
+    tfs.word_wrap = True
+    p = tfs.paragraphs[0]
+    p.text = "PRESENTER"
     p.font.size = Pt(10)
     p.font.bold = True
-    p.font.color.rgb = GOLD_ACCENT
+    p.font.color.rgb = AMBER_ACCENT
 
-    p = tf_cp.add_paragraph()
+    p = tfs.add_paragraph()
     p.text = "Shashank M T"
-    p.font.size = Pt(18)
+    p.font.size = Pt(20)
     p.font.bold = True
     p.font.color.rgb = TEXT_WHITE
 
-    items = [
-        ("UUCMS No.", "U01BH25C0174"),
-        ("Program", "BCA(AI) – 3rd Semester, 2nd Year"),
+    details = [
+        ("UUCMS Register No.", "U01BH25C0174"),
+        ("Course / Degree", "BCA(AI) – 3rd Semester, 2nd Year"),
         ("Subject", "Machine Learning"),
         ("Institution", "Pooja Bhagavat Mahajana First Grade College"),
     ]
-    for label, val in items:
-        p = tf_cp.add_paragraph()
-        p.text = f"•  {label}: {val}"
+    for k, v in details:
+        p = tfs.add_paragraph()
+        p.text = f"•  {k}: {v}"
         p.font.size = Pt(11)
         p.font.color.rgb = RGBColor(226, 232, 240)
 
-    # Evaluation & Guide Card
-    card_g = add_card(s1, Inches(6.8), Inches(3.85), Inches(5.5), Inches(2.8), NAVY_MEDIUM, NAVY_ACCENT)
-    tf_cg = card_g.text_frame
-    tf_cg.word_wrap = True
-
-    p = tf_cg.paragraphs[0]
-    p.text = "ACADEMIC GUIDANCE & REPOSITORY"
+    # Faculty & Guide Card
+    c_f = add_card(s1, Inches(6.8), Inches(3.8), Inches(5.5), Inches(3.0), NAVY_CARD, NAVY_ACCENT)
+    tff = c_f.text_frame
+    tff.word_wrap = True
+    p = tff.paragraphs[0]
+    p.text = "GUIDANCE & INSTITUTION"
     p.font.size = Pt(10)
     p.font.bold = True
-    p.font.color.rgb = GOLD_ACCENT
+    p.font.color.rgb = AMBER_ACCENT
 
-    p = tf_cg.add_paragraph()
+    p = tff.add_paragraph()
     p.text = "Ragunandan B"
-    p.font.size = Pt(18)
+    p.font.size = Pt(20)
     p.font.bold = True
     p.font.color.rgb = TEXT_WHITE
 
-    eval_items = [
+    f_details = [
         ("Designation", "Course Lecturer (Guest Lecturer – ML)"),
+        ("Department", "Dept. of Computer Science & AI, PBM FGC"),
         ("Date", "October 15, 2026"),
-        ("Core Paper", "M. Turk & A. Pentland, J. Cogn. Neurosci. (1991)"),
-        ("GitHub Repo", "github.com/shashank-emty/Eigen-faces"),
+        ("Repository", "github.com/shashank-emty/Eigen-faces"),
     ]
-    for label, val in eval_items:
-        p = tf_cg.add_paragraph()
-        p.text = f"•  {label}: {val}"
+    for k, v in f_details:
+        p = tff.add_paragraph()
+        p.text = f"•  {k}: {v}"
         p.font.size = Pt(11)
         p.font.color.rgb = RGBColor(226, 232, 240)
 
-    # ==========================================
-    # SLIDE 2: Problem Statement & Motivation
-    # ==========================================
+    # =========================================================================
+    # SLIDE 2: Problem & Motivation (The Paradigm Shift)
+    # =========================================================================
     s2 = prs.slides.add_slide(blank_layout)
     add_bg(s2)
-    add_header(s2, "1. Problem Formulation & Historical Context")
+    add_header(s2, "Motivation & The Paradigm Shift in Face Recognition")
 
-    # Left card: Geometric feature extraction (Old Way)
-    c_left = add_card(s2, Inches(0.8), Inches(1.5), Inches(5.6), Inches(5.4))
-    tf_l = c_left.text_frame
-    tf_l.word_wrap = True
-    p = tf_l.paragraphs[0]
-    p.text = "Traditional 1980s Approach: Geometric Features"
+    # Left: The Old Way (Geometric)
+    c_old = add_card(s2, Inches(0.8), Inches(1.5), Inches(5.6), Inches(5.4))
+    tf_old = c_old.text_frame
+    tf_old.word_wrap = True
+    p = tf_old.paragraphs[0]
+    p.text = "Traditional Approach (Pre-1991)"
     p.font.size = Pt(16)
     p.font.bold = True
-    p.font.color.rgb = RGBColor(225, 29, 72)
+    p.font.color.rgb = ROSE_ACCENT
 
-    points_l = [
-        "Relied on explicitly locating facial landmarks (eye corners, nose tip, mouth edges, chin contour).",
-        "Measured hand-crafted geometric distances and ratios between landmark coordinates.",
-        "Major Vulnerabilities:",
-        "  • Landmark localization errors cascade and destroy recognition.",
-        "  • Extreme sensitivity to non-rigid deformations (smiles, frowns).",
-        "  • Complete breakdown under illumination variations and shadows.",
-        "High computational burden for landmark extraction with low accuracy."
+    p = tf_old.add_paragraph()
+    p.text = "Geometric Feature Extraction"
+    p.font.size = Pt(12)
+    p.font.color.rgb = TEXT_MUTED
+
+    old_points = [
+        ("Manual Geometry Measurement", "Tried to measure distances between pupils, nose width, lip length, and jaw curvature."),
+        ("High Sensitivity to Pose", "Even a small head tilt or rotation dramatically altered calculated distances."),
+        ("Expression Sensitivity", "Smiling, blinking, or talking changed feature coordinates and broke matching."),
+        ("Lighting Vulnerability", "Shadows caused edge detectors to miss feature boundaries entirely."),
+        ("Conclusion", "Complex, slow, and brittle for automated real-time recognition.")
     ]
-    for pt in points_l:
-        p = tf_l.add_paragraph()
-        p.text = pt
-        p.font.size = Pt(12)
-        p.font.color.rgb = TEXT_DARK
-
-    # Right card: Turk & Pentland Paradigm Shift
-    c_right = add_card(s2, Inches(6.8), Inches(1.5), Inches(5.7), Inches(5.4))
-    tf_r = c_right.text_frame
-    tf_r.word_wrap = True
-    p = tf_r.paragraphs[0]
-    p.text = "Turk & Pentland (1991): Holistic Subspace"
-    p.font.size = Pt(16)
-    p.font.bold = True
-    p.font.color.rgb = NAVY_ACCENT
-
-    points_r = [
-        "Radical Paradigm Shift: Treat faces as continuous 2D intensity distributions rather than sets of geometric features.",
-        "Information-Theoretic Modeling: Capture the statistical variation across the entire face ensemble using Principal Component Analysis (PCA).",
-        "The 'Face Space' Concept:",
-        "  • High-dimensional image space ($D = 4096$) is heavily redundant.",
-        "  • Human faces occupy a compact low-dimensional subspace ($K \\approx 30-50$).",
-        "  • Unsupervised: finds optimal orthogonal basis vectors directly from raw pixels.",
-        "Fast recognition using simple vector projections in low-dimensional space."
-    ]
-    for pt in points_r:
-        p = tf_r.add_paragraph()
-        p.text = pt
-        p.font.size = Pt(12)
-        p.font.color.rgb = TEXT_DARK
-
-    # ==========================================
-    # SLIDE 3: System Pipeline Architecture
-    # ==========================================
-    s3 = prs.slides.add_slide(blank_layout)
-    add_bg(s3)
-    add_header(s3, "2. End-to-End System Pipeline Architecture")
-
-    # 4 stages horizontal cards
-    stages = [
-        ("STAGE 1", "Data Preprocessing", [
-            "• Grayscale normalization",
-            "• Resize to uniform N×N (64×64)",
-            "• Flatten into vector Γ ∈ ℝ⁴⁰⁹⁶",
-            "• Partition into Train & Test"
-        ], CYAN_ACCENT),
-        ("STAGE 2", "Subspace Learning", [
-            "• Compute mean face Ψ",
-            "• Mean-center: Φᵢ = Γᵢ - Ψ",
-            "• Form matrix A = [Φ₁...Φ_M]",
-            "• Surrogate trick: L = Aᵀ A"
-        ], NAVY_ACCENT),
-        ("STAGE 3", "Eigenface Basis", [
-            "• Solve L v_k = μ_k v_k",
-            "• Eigenfaces: u_k = A v_k / ||A v_k||",
-            "• Retain top K components",
-            "• Basis matrix U = [u₁...u_K]"
-        ], GOLD_ACCENT),
-        ("STAGE 4", "4-Way Inference", [
-            "• Project probe: Ω = Uᵀ(Γ - Ψ)",
-            "• Reconstruct: Γ̂ = Ψ + U Ω",
-            "• Measure DFFS (ε_d) & DIFS (ε_c)",
-            "• 4-Way Decision Rule"
-        ], GREEN_ACCENT),
-    ]
-
-    for idx, (st_num, title, items, color) in enumerate(stages):
-        x = Inches(0.8 + idx * 2.98)
-        card = add_card(s3, x, Inches(1.5), Inches(2.8), Inches(4.3))
-        tf_s = card.text_frame
-        tf_s.word_wrap = True
-
-        p = tf_s.paragraphs[0]
-        p.text = st_num
-        p.font.size = Pt(10)
-        p.font.bold = True
-        p.font.color.rgb = color
-
-        p = tf_s.add_paragraph()
-        p.text = title
-        p.font.size = Pt(14)
+    for title, desc in old_points:
+        p = tf_old.add_paragraph()
+        p.text = f"• {title}:"
+        p.font.size = Pt(11.5)
         p.font.bold = True
         p.font.color.rgb = NAVY_DARK
+        p = tf_old.add_paragraph()
+        p.text = f"  {desc}"
+        p.font.size = Pt(10.5)
+        p.font.color.rgb = TEXT_DARK
 
-        p = tf_s.add_paragraph()
-        p.text = ""
+    # Right: The Breakthrough (Holistic)
+    c_new = add_card(s2, Inches(6.8), Inches(1.5), Inches(5.7), Inches(5.4))
+    tf_new = c_new.text_frame
+    tf_new.word_wrap = True
+    p = tf_new.paragraphs[0]
+    p.text = "The Turk & Pentland Breakthrough (1991)"
+    p.font.size = Pt(16)
+    p.font.bold = True
+    p.font.color.rgb = EMERALD_ACCENT
 
-        for it in items:
-            p = tf_s.add_paragraph()
-            p.text = it
+    p = tf_new.add_paragraph()
+    p.text = "Holistic Information-Theoretic Approach"
+    p.font.size = Pt(12)
+    p.font.color.rgb = TEXT_MUTED
+
+    new_points = [
+        ("Treat Whole Image as a Pattern", "Does not isolate eyes, nose, or mouth. Analyzes the face as a single 2D brightness distribution."),
+        ("Subspace Information Coding", "Captures features that best account for the variation across the entire collection of faces."),
+        ("Dimensionality Reduction", "Projects high-dimensional image space onto a tiny subspace spanning only the prominent variations."),
+        ("Real-Time Execution", "Recognition reduces to a simple Euclidean distance calculation among a few dozen scalar weights."),
+        ("Foundational Landmark", "Established the principle of appearance-based subspace learning in computer vision.")
+    ]
+    for title, desc in new_points:
+        p = tf_new.add_paragraph()
+        p.text = f"• {title}:"
+        p.font.size = Pt(11.5)
+        p.font.bold = True
+        p.font.color.rgb = NAVY_DARK
+        p = tf_new.add_paragraph()
+        p.text = f"  {desc}"
+        p.font.size = Pt(10.5)
+        p.font.color.rgb = TEXT_DARK
+
+    # =========================================================================
+    # SLIDE 3: Mathematical Pipeline: Vectorization & Mean Centering
+    # =========================================================================
+    s3 = prs.slides.add_slide(blank_layout)
+    add_bg(s3)
+    add_header(s3, "Mathematical Subspace: Image Vectorization & Mean Face")
+
+    cards = [
+        ("1. Image Vectorization",
+         "From 2D Pixel Grid to High-Dimensional Vector",
+         [
+             "• Standard image dimensions: N × N = 64 × 64 pixels.",
+             "• Unrolled into a single column vector: Γ ∈ ℝ^D, where D = 4,096.",
+             "• Pixel values are normalized grayscale intensities in range [0, 1].",
+             "• Every face is treated as a single point in a 4,096-dimensional space."
+         ], Inches(0.8), Inches(1.5), Inches(3.6), Inches(5.4), NAVY_ACCENT),
+
+        ("2. The Average Face (Ψ)",
+         "Capturing the Shared Baseline Geometry",
+         [
+             "• Mathematical definition:",
+             "    Ψ = (1 / M) Σ Γ_i   (for i = 1 to M)",
+             "• Captures common structural features shared across all human subjects (eyes, nose, forehead placement).",
+             "• Visually appears as a smooth, blurry composite face.",
+             "• Serves as the origin of the centered face coordinate system."
+         ], Inches(4.8), Inches(1.5), Inches(3.6), Inches(5.4), AMBER_ACCENT),
+
+        ("3. Mean-Centered Matrix (A)",
+         "Isolating Distinguishing Variations",
+         [
+             "• Subtract the mean from each face:",
+             "    Φ_i = Γ_i - Ψ",
+             "• Removes common baseline; preserves only individual distinctiveness.",
+             "• Stack centered vectors into matrix A:",
+             "    A = [Φ_1, Φ_2, ..., Φ_M] ∈ ℝ^(D × M)",
+             "• With D = 4,096 and M = 245, A is a 4,096 × 245 matrix."
+         ], Inches(8.8), Inches(1.5), Inches(3.7), Inches(5.4), EMERALD_ACCENT),
+    ]
+
+    for title, subtitle, bullets, left, top, width, height, accent in cards:
+        card = add_card(s3, left, top, width, height)
+        tf = card.text_frame
+        tf.word_wrap = True
+        p = tf.paragraphs[0]
+        p.text = title
+        p.font.size = Pt(15)
+        p.font.bold = True
+        p.font.color.rgb = accent
+
+        p = tf.add_paragraph()
+        p.text = subtitle
+        p.font.size = Pt(11)
+        p.font.color.rgb = TEXT_MUTED
+
+        for b in bullets:
+            p = tf.add_paragraph()
+            p.text = b
             p.font.size = Pt(11)
             p.font.color.rgb = TEXT_DARK
 
-    # Bottom summary bar
-    bot_card = add_card(s3, Inches(0.8), Inches(6.0), Inches(11.73), Inches(0.9), NAVY_DARK)
-    tf_b = bot_card.text_frame
-    p = tf_b.paragraphs[0]
-    p.text = "Key Innovation: Pure linear algebra pipeline executed from scratch using NumPy with zero black-box dependencies."
-    p.font.size = Pt(12)
-    p.font.bold = True
-    p.font.color.rgb = TEXT_WHITE
-    p.alignment = PP_ALIGN.CENTER
-
-    # ==========================================
-    # SLIDE 4: Mathematical Subspace Formulation
-    # ==========================================
+    # =========================================================================
+    # SLIDE 4: The Turk-Pentland Shortcut (The Covariance Reduction Trick)
+    # =========================================================================
     s4 = prs.slides.add_slide(blank_layout)
     add_bg(s4)
-    add_header(s4, "3. Mathematical Subspace Formulation & Mean Centering")
+    add_header(s4, "The Turk-Pentland Dimensionality Reduction Trick")
 
-    c1 = add_card(s4, Inches(0.8), Inches(1.5), Inches(5.6), Inches(5.4))
-    tf1 = c1.text_frame
-    tf1.word_wrap = True
-    p = tf1.paragraphs[0]
-    p.text = "Vectorization & Data Matrix Formulation"
+    c_left = add_card(s4, Inches(0.8), Inches(1.5), Inches(5.6), Inches(5.4))
+    tf_l = c_left.text_frame
+    tf_l.word_wrap = True
+    p = tf_l.paragraphs[0]
+    p.text = "The Computational Roadblock"
     p.font.size = Pt(16)
+    p.font.bold = True
+    p.font.color.rgb = ROSE_ACCENT
+
+    p = tf_l.add_paragraph()
+    p.text = "Full Covariance Matrix: C = (1/M) A A^T"
+    p.font.size = Pt(12)
+    p.font.color.rgb = TEXT_MUTED
+
+    items_l = [
+        ("Dimensionality Crisis", "A is 4,096 × 245. Thus, C = A A^T has dimensions 4,096 × 4,096."),
+        ("Massive Matrix Size", "Contains 4,096² = 16,777,216 floating-point values (~134 MB memory footprint)."),
+        ("Cubic Complexity", "Computing eigenvectors of a 4,096 × 4,096 matrix requires O(D³) operations—intractable for real-time deployment."),
+        ("Rank Deficiency", "Because we only have M = 245 sample images, the maximum rank of C is at most M - 1 = 244."),
+        ("Redundant Computation", "Over 3,850 of the 4,096 eigenvalues are exactly zero! Direct calculation computes thousands of meaningless zeros.")
+    ]
+    for t, d in items_l:
+        p = tf_l.add_paragraph()
+        p.text = f"• {t}:"
+        p.font.size = Pt(11.5)
+        p.font.bold = True
+        p.font.color.rgb = NAVY_DARK
+        p = tf_l.add_paragraph()
+        p.text = f"  {d}"
+        p.font.size = Pt(10.5)
+        p.font.color.rgb = TEXT_DARK
+
+    c_right = add_card(s4, Inches(6.8), Inches(1.5), Inches(5.7), Inches(5.4))
+    tf_r = c_right.text_frame
+    tf_r.word_wrap = True
+    p = tf_r.paragraphs[0]
+    p.text = "The Turk-Pentland Algebraic Duality"
+    p.font.size = Pt(16)
+    p.font.bold = True
+    p.font.color.rgb = EMERALD_ACCENT
+
+    p = tf_r.add_paragraph()
+    p.text = "Surrogate Matrix: L = A^T A (279.5× Smaller)"
+    p.font.size = Pt(12)
+    p.font.color.rgb = TEXT_MUTED
+
+    proof_steps = [
+        ("1. Compute Surrogate Matrix L", "L = A^T A of size 245 × 245 (only 60,025 elements)."),
+        ("2. Solve Small Eigenproblem", "Let v_k be an eigenvector of L with eigenvalue μ_k:\n    A^T A v_k = μ_k v_k"),
+        ("3. Pre-multiply Both Sides by A", "    A (A^T A v_k) = A (μ_k v_k)"),
+        ("4. Re-associate Parentheses", "    (A A^T) (A v_k) = μ_k (A v_k)"),
+        ("5. Exact Equivalence Established", "The vector u_k = A v_k is directly an eigenvector of the full covariance matrix C = A A^T!"),
+        ("6. Orthonormalization", "Normalize to unit length: u_k = (A v_k) / ||A v_k||₂.")
+    ]
+    for t, d in proof_steps:
+        p = tf_r.add_paragraph()
+        p.text = f"• {t}:"
+        p.font.size = Pt(11.5)
+        p.font.bold = True
+        p.font.color.rgb = NAVY_DARK
+        p = tf_r.add_paragraph()
+        p.text = f"  {d}"
+        p.font.size = Pt(10.5)
+        p.font.color.rgb = TEXT_DARK
+
+    # =========================================================================
+    # SLIDE 5: How Eigenfaces Are Formed (The Recipe Behind Ghost Faces)
+    # =========================================================================
+    s5_form = prs.slides.add_slide(blank_layout)
+    add_bg(s5_form)
+    add_header(s5_form, "How Eigenfaces Are Formed: The Linear Combination Recipe")
+
+    c1 = add_card(s5_form, Inches(0.8), Inches(1.5), Inches(5.6), Inches(5.4))
+    tf_c1 = c1.text_frame
+    tf_c1.word_wrap = True
+    p = tf_c1.paragraphs[0]
+    p.text = "1. Transforming Small Vectors Into Faces"
+    p.font.size = Pt(15)
     p.font.bold = True
     p.font.color.rgb = NAVY_ACCENT
 
-    math_pts1 = [
-        "• Image Vectorization: An image I(x, y) of size N × N = 64 × 64 is flattened row-wise into a high-dimensional vector:",
-        "      Γᵢ ∈ ℝᴰ,   where D = 64 × 64 = 4096",
-        "",
-        "• Average Face Vector (Mean Face):",
-        "      Ψ = (1 / M) ∑_{i=1}^M Γᵢ",
-        "  Represents the shared baseline template common to all human faces in the gallery.",
-        "",
-        "• Mean-Centered Difference Vectors:",
-        "      Φᵢ = Γᵢ - Ψ",
-        "  Centers the distribution at origin, isolating subject-specific variations.",
-        "",
-        "• Data Matrix Formulation:",
-        "      A = [Φ₁, Φ₂, ..., Φ_M] ∈ ℝ^{D × M}  (4096 × 245)"
+    p = tf_c1.add_paragraph()
+    p.text = "Mathematical Recipe: u_k = A · v_k"
+    p.font.size = Pt(12)
+    p.font.color.rgb = TEXT_MUTED
+
+    form_steps = [
+        ("The Eigenvector v_k as Blending Weights",
+         "The small eigenvector v_k = [c₁, c₂, ..., c_M]^T contains M scalar numbers (one per training face). "
+         "These numbers serve as mixing coefficients."),
+
+        ("Linear Combination of All Training Faces",
+         "Multiplying A by v_k produces:\n"
+         "    u_k = Σ(i=1 to M) c_i · Φ_i\n"
+         "In plain words: Eigenface k is formed by taking c₁ of Face 1, adding c₂ of Face 2, subtracting c₃ of Face 3, and so on across all 245 faces."),
+
+        ("Why Do They Look Like 'Ghost' Faces?",
+         "Because every Eigenface is literally a composite blending of 245 centered human faces. "
+         "Adding and subtracting centered images reveals shared anatomical contours and lighting gradients while canceling individual skin textures.")
     ]
-    for pt in math_pts1:
-        p = tf1.add_paragraph()
-        p.text = pt
+    for title, desc in form_steps:
+        p = tf_c1.add_paragraph()
+        p.text = f"• {title}:"
         p.font.size = Pt(11.5)
+        p.font.bold = True
+        p.font.color.rgb = NAVY_DARK
+        p = tf_c1.add_paragraph()
+        p.text = f"  {desc}"
+        p.font.size = Pt(10.5)
         p.font.color.rgb = TEXT_DARK
 
-    c2 = add_card(s4, Inches(6.8), Inches(1.5), Inches(5.7), Inches(5.4))
-    tf2 = c2.text_frame
-    tf2.word_wrap = True
-    p = tf2.paragraphs[0]
-    p.text = "Why Mean Centering is Essential"
-    p.font.size = Pt(16)
-    p.font.bold = True
-    p.font.color.rgb = GOLD_ACCENT
-
-    math_pts2 = [
-        "1. Removes Non-Informative Baseline:",
-        "   Without subtracting Ψ, the 1st principal component would simply point towards the center of mass of face intensities rather than capturing facial distinctions.",
-        "",
-        "2. Centers the Covariance Subspace:",
-        "   The sample covariance matrix requires zero-mean variables:",
-        "      C = (1 / M) ∑_{i=1}^M Φᵢ Φᵢᵀ = (1 / M) A Aᵀ",
-        "",
-        "3. Interpretable Linear Combinations:",
-        "   Every face can now be represented as the common template plus a weighted combination of variation patterns:",
-        "      Γ ≈ Ψ + ∑_{k=1}^K ω_k u_k"
-    ]
-    for pt in math_pts2:
-        p = tf2.add_paragraph()
-        p.text = pt
-        p.font.size = Pt(12)
-        p.font.color.rgb = TEXT_DARK
-
-    # ==========================================
-    # SLIDE 5: The Turk-Pentland Covariance Reduction Trick
-    # ==========================================
-    s5 = prs.slides.add_slide(blank_layout)
-    add_bg(s5)
-    add_header(s5, "4. The Turk-Pentland Covariance Reduction Trick (Paper Core)")
-
-    c_prob = add_card(s5, Inches(0.8), Inches(1.5), Inches(5.6), Inches(2.5))
-    tf_cp = c_prob.text_frame
-    tf_cp.word_wrap = True
-    p = tf_cp.paragraphs[0]
-    p.text = "The Intractable Dimensionality Problem"
+    c2 = add_card(s5_form, Inches(6.8), Inches(1.5), Inches(5.7), Inches(5.4))
+    tf_c2 = c2.text_frame
+    tf_c2.word_wrap = True
+    p = tf_c2.paragraphs[0]
+    p.text = "2. Ordering by Variance & Feature Hierarchy"
     p.font.size = Pt(15)
     p.font.bold = True
-    p.font.color.rgb = RGBColor(225, 29, 72)
-    pts = [
-        "• Full Covariance Matrix: C = (1/M) A Aᵀ",
-        "• Size: D × D = 4096 × 4096 = 16,777,216 entries (16.7 Million floats!)",
-        "• Eigendecomposition complexity: O(D³) ≈ 6.87 × 10¹⁰ operations.",
-        "• But we only have M = 245 training images! Max rank is M - 1 = 244.",
-        "• 4096 - 245 = 3851 eigenvalues are exactly zero (pure redundant noise)."
+    p.font.color.rgb = EMERALD_ACCENT
+
+    p = tf_c2.add_paragraph()
+    p.text = "Sorting Eigenfaces by Eigenvalues (λ₁ ≥ λ₂ ≥ ... ≥ λ_M)"
+    p.font.size = Pt(12)
+    p.font.color.rgb = TEXT_MUTED
+
+    hierarchy_steps = [
+        ("Unit Normalization",
+         "Each raw Eigenface is normalized to unit length:\n"
+         "    u_k = u_k / ||u_k||₂\n"
+         "Ensures all basis vectors form an orthonormal basis (u_i^T · u_j = 0 when i ≠ j)."),
+
+        ("Eigenfaces 1 – 2 (Primary Illumination)",
+         "Correspond to the largest eigenvalues. Capture the dominant global lighting directions (light from left vs. light from right)."),
+
+        ("Eigenfaces 3 – 10 (Macro Facial Anatomy)",
+         "Capture broad geometric variations: jawline width, forehead height, cheekbone structure, and hairline curvature."),
+
+        ("Eigenfaces 11 – 40 (Micro Facial Features)",
+         "Encode localized distinguishing traits: eye shapes, nose bridge contours, lip fullness, and eyebrows."),
+
+        ("Eigenfaces 41+ (Noise & Redundancy)",
+         "Represent negligible variance, pixel quantization noise, or camera artifacts—safely discarded during dimensionality reduction.")
     ]
-    for pt in pts:
-        p = tf_cp.add_paragraph()
-        p.text = pt
-        p.font.size = Pt(11)
+    for title, desc in hierarchy_steps:
+        p = tf_c2.add_paragraph()
+        p.text = f"• {title}:"
+        p.font.size = Pt(11.5)
+        p.font.bold = True
+        p.font.color.rgb = NAVY_DARK
+        p = tf_c2.add_paragraph()
+        p.text = f"  {desc}"
+        p.font.size = Pt(10.5)
         p.font.color.rgb = TEXT_DARK
 
-    c_sol = add_card(s5, Inches(0.8), Inches(4.2), Inches(5.6), Inches(2.7))
-    tf_cs = c_sol.text_frame
-    tf_cs.word_wrap = True
-    p = tf_cs.paragraphs[0]
-    p.text = "The Turk-Pentland Surrogate Matrix L"
-    p.font.size = Pt(15)
-    p.font.bold = True
-    p.font.color.rgb = GREEN_ACCENT
-    pts = [
-        "• Compute surrogate matrix: L = Aᵀ A",
-        "• Size: M × M = 245 × 245 = 60,025 entries (279.5× smaller!)",
-        "• Eigendecomposition complexity: O(M³) ≈ 1.47 × 10⁷ operations.",
-        "• Speedup factor: > 4,600× reduction in computation!",
-        "• Can be solved in milliseconds on standard hardware."
-    ]
-    for pt in pts:
-        p = tf_cs.add_paragraph()
-        p.text = pt
-        p.font.size = Pt(11)
-        p.font.color.rgb = TEXT_DARK
+    # =========================================================================
+    # SLIDE 6: Eigenfaces Gallery & Eigenvalue Spectrum
+    # =========================================================================
+    s6_vis = prs.slides.add_slide(blank_layout)
+    add_bg(s6_vis)
+    add_header(s6_vis, "Eigenfaces Gallery & Eigenvalue Spectrum Analysis")
 
-    # Right side: Mathematical Proof
-    c_proof = add_card(s5, Inches(6.8), Inches(1.5), Inches(5.7), Inches(5.4), NAVY_DARK, NAVY_ACCENT)
-    tf_pr = c_proof.text_frame
-    tf_pr.word_wrap = True
-    p = tf_pr.paragraphs[0]
-    p.text = "Mathematical Proof of Equivalence"
-    p.font.size = Pt(16)
-    p.font.bold = True
-    p.font.color.rgb = GOLD_ACCENT
+    gallery_img = os.path.join(RESULTS_DIR, "01_eigenfaces_gallery.png")
+    if os.path.exists(gallery_img):
+        s6_vis.shapes.add_picture(gallery_img, Inches(0.8), Inches(1.45), Inches(5.6), Inches(4.2))
 
-    proof_steps = [
-        "1. Let v_k be an eigenvector of L = Aᵀ A with eigenvalue μ_k:",
-        "       Aᵀ A v_k = μ_k v_k",
-        "",
-        "2. Multiply both sides from the left by matrix A:",
-        "       A (Aᵀ A v_k) = A (μ_k v_k)",
-        "",
-        "3. Regroup terms using matrix associativity:",
-        "       (A Aᵀ) (A v_k) = μ_k (A v_k)",
-        "",
-        "4. Recognize the form of the eigenvalue equation:",
-        "       Let  u_k = A v_k",
-        "       Then:  (A Aᵀ) u_k = μ_k u_k",
-        "",
-        "5. Normalization to Unit Orthonormal Basis:",
-        "       u_k = (A v_k) / ||A v_k||₂",
-        "",
-        "Conclusion: A v_k is an EXACT eigenvector of the full D × D covariance matrix A Aᵀ with the identical eigenvalue μ_k!"
-    ]
-    for pt in proof_steps:
-        p = tf_pr.add_paragraph()
-        p.text = pt
-        p.font.size = Pt(11)
-        p.font.color.rgb = TEXT_WHITE
-
-    # ==========================================
-    # SLIDE 6: Eigenfaces Gallery & Scree Plot
-    # ==========================================
-    s6 = prs.slides.add_slide(blank_layout)
-    add_bg(s6)
-    add_header(s6, "5. Eigenfaces Subspace & Energy Spectrum")
-
-    img_gallery = os.path.join(RESULTS_DIR, "01_eigenfaces_gallery.png")
-    img_scree = os.path.join(RESULTS_DIR, "02_eigenvalue_scree_plot.png")
-
-    if os.path.exists(img_gallery):
-        s6.shapes.add_picture(img_gallery, Inches(0.8), Inches(1.5), width=Inches(5.7))
-    if os.path.exists(img_scree):
-        s6.shapes.add_picture(img_scree, Inches(6.8), Inches(1.5), width=Inches(5.7))
-
-    # Bottom notes
-    card_n = add_card(s6, Inches(0.8), Inches(5.9), Inches(11.73), Inches(1.1))
-    tf_n = card_n.text_frame
-    tf_n.word_wrap = True
-    p = tf_n.paragraphs[0]
-    p.text = "Key Observations:"
+    c_gal = add_card(s6_vis, Inches(0.8), Inches(5.75), Inches(5.6), Inches(1.3))
+    tf_g = c_gal.text_frame
+    tf_g.word_wrap = True
+    p = tf_g.paragraphs[0]
+    p.text = "Visual Anatomy of Top 16 Eigenfaces"
     p.font.size = Pt(11)
     p.font.bold = True
     p.font.color.rgb = NAVY_ACCENT
-    obs = (
-        "• Top eigenfaces (u₁ - u₄) capture dominant global illumination gradients (left/right shading) and head silhouette.\n"
-        "• Middle eigenfaces (u₅ - u₁₆) capture facial micro-structures: eyes, nose bridge, mouth shape, and facial hair.\n"
-        "• Scree analysis shows the top 30-50 components retain >85% of total variance, reducing 4,096 dimensions to 40 numbers."
-    )
-    p2 = tf_n.add_paragraph()
-    p2.text = obs
-    p2.font.size = Pt(10.5)
-    p2.font.color.rgb = TEXT_DARK
+    p = tf_g.add_paragraph()
+    p.text = "• The first 4 eigenfaces show strong left/right and top/bottom lighting gradients.\n• Components 5-16 reveal distinct eye socket hollows, nose bridges, and jaw shapes.\n• Each image is an orthonormal basis vector spanning the face subspace."
+    p.font.size = Pt(9.5)
+    p.font.color.rgb = TEXT_DARK
 
-    # ==========================================
-    # SLIDE 7: Face Reconstruction Dynamics
-    # ==========================================
-    s7 = prs.slides.add_slide(blank_layout)
-    add_bg(s7)
-    add_header(s7, "6. Projection & Reconstruction Dynamics")
+    scree_img = os.path.join(RESULTS_DIR, "02_eigenvalue_scree_plot.png")
+    if os.path.exists(scree_img):
+        s6_vis.shapes.add_picture(scree_img, Inches(6.8), Inches(1.45), Inches(5.7), Inches(4.2))
 
-    img_recon = os.path.join(RESULTS_DIR, "03_face_reconstruction.png")
-    if os.path.exists(img_recon):
-        s7.shapes.add_picture(img_recon, Inches(0.8), Inches(1.5), width=Inches(11.73))
+    c_scr = add_card(s6_vis, Inches(6.8), Inches(5.75), Inches(5.7), Inches(1.3))
+    tf_s = c_scr.text_frame
+    tf_s.word_wrap = True
+    p = tf_s.paragraphs[0]
+    p.text = "Eigenvalue Spectrum (Scree Analysis)"
+    p.font.size = Pt(11)
+    p.font.bold = True
+    p.font.color.rgb = EMERALD_ACCENT
+    p = tf_s.add_paragraph()
+    p.text = "• Rapid exponential drop in eigenvalue magnitude confirms high data redundancy.\n• First 10 components account for ~65% of total dataset variance.\n• Top 40 components capture >88% of variance, discarding high-frequency noise."
+    p.font.size = Pt(9.5)
+    p.font.color.rgb = TEXT_DARK
 
-    card_r = add_card(s7, Inches(0.8), Inches(4.7), Inches(11.73), Inches(2.3))
-    tf_r = card_r.text_frame
-    tf_r.word_wrap = True
-    p = tf_r.paragraphs[0]
-    p.text = "Projection and Synthesis Mathematics:"
+    # =========================================================================
+    # SLIDE 7: How Projection & Reconstruction Happen in Practice
+    # =========================================================================
+    s7_ops = prs.slides.add_slide(blank_layout)
+    add_bg(s7_ops)
+    add_header(s7_ops, "How Projection & Reconstruction Work in Practice")
+
+    # Math Card Top
+    c_math = add_card(s7_ops, Inches(0.8), Inches(1.4), Inches(11.73), Inches(1.55))
+    tf_m = c_math.text_frame
+    tf_m.word_wrap = True
+    p = tf_m.paragraphs[0]
+    p.text = "1. Projection (Encoding) vs. 2. Reconstruction (Synthesis)"
     p.font.size = Pt(13)
     p.font.bold = True
     p.font.color.rgb = NAVY_ACCENT
 
-    pts_recon = [
-        "• Orthogonal Projection onto Face Subspace:  Ω = Uᵀ (Γ - Ψ) = [ω₁, ω₂, ..., ω_K]ᵀ ∈ ℝᴷ",
-        "  Compresses a 4096-pixel image into a compact vector of K coordinates.",
-        "• Face Synthesis / Reconstruction:  Γ̂ = Ψ + U Ω = Ψ + ∑_{k=1}^K ω_k u_k",
-        "• Visual Hierarchy of Reconstruction:",
-        "  - K = 1 to 5: Coarse shape and overall lighting direction emerge.",
-        "  - K = 10 to 20: Eye sockets, nose contour, and mouth orientation become identifiable.",
-        "  - K = 30 to 50: Individual subject features become sharp and recognizable, achieving high fidelity."
-    ]
-    for pt in pts_recon:
-        p = tf_r.add_paragraph()
-        p.text = pt
-        p.font.size = Pt(11)
-        p.font.color.rgb = TEXT_DARK
+    p = tf_m.add_paragraph()
+    p.text = "• How Projection Happens:  Ω = U_K^T · (Γ - Ψ) = [ω₁, ω₂, ..., ω_K]^T ∈ ℝ^K"
+    p.font.size = Pt(11)
+    p.font.bold = True
+    p.font.color.rgb = NAVY_DARK
 
-    # ==========================================
-    # SLIDE 8: The 4-Way Decision Rule
-    # ==========================================
-    s8 = prs.slides.add_slide(blank_layout)
-    add_bg(s8)
-    add_header(s8, "7. The Complete 4-Way Decision Framework (Section 3.2)")
+    p = tf_m.add_paragraph()
+    p.text = "  To encode a new face Γ: (1) Subtract Average Face Ψ. (2) Take dot product with each Eigenface u_k to compute weight ω_k = u_k^T · (Γ - Ψ). This compresses 4,096 raw pixels into a tiny vector of K scalar weights (e.g. K = 40)."
+    p.font.size = Pt(10)
+    p.font.color.rgb = TEXT_DARK
 
-    img_geom = os.path.join(RESULTS_DIR, "04_decision_space_geometry.png")
-    if os.path.exists(img_geom):
-        s8.shapes.add_picture(img_geom, Inches(0.8), Inches(1.5), width=Inches(5.7))
+    p = tf_m.add_paragraph()
+    p.text = "• How Reconstruction Happens:  Γ̂ = Ψ + U_K · Ω = Ψ + Σ(k=1 to K) ω_k · u_k"
+    p.font.size = Pt(11)
+    p.font.bold = True
+    p.font.color.rgb = NAVY_DARK
 
-    card_dec = add_card(s8, Inches(6.8), Inches(1.5), Inches(5.7), Inches(5.4))
-    tf_d = card_dec.text_frame
+    p = tf_m.add_paragraph()
+    p.text = "  To rebuild the face: Start with Average Face Ψ, then add each Eigenface scaled by its weight. Layer by layer, the unique face reappears."
+    p.font.size = Pt(10)
+    p.font.color.rgb = TEXT_DARK
+
+    recon_img = os.path.join(RESULTS_DIR, "03_face_reconstruction.png")
+    if os.path.exists(recon_img):
+        s7_ops.shapes.add_picture(recon_img, Inches(0.8), Inches(3.1), Inches(11.73), Inches(4.1))
+
+    # =========================================================================
+    # SLIDE 8: How the 4-Way Decision Rule Works in Practice
+    # =========================================================================
+    s8_dec = prs.slides.add_slide(blank_layout)
+    add_bg(s8_dec)
+    add_header(s8_dec, "How Classification Happens: The 4-Way Decision Rule")
+
+    c_dist = add_card(s8_dec, Inches(0.8), Inches(1.4), Inches(5.6), Inches(5.7))
+    tf_d = c_dist.text_frame
     tf_d.word_wrap = True
     p = tf_d.paragraphs[0]
-    p.text = "Dual-Threshold Metric Formulation"
-    p.font.size = Pt(15)
+    p.text = "The Two Fundamental Questions & Distances"
+    p.font.size = Pt(14)
     p.font.bold = True
     p.font.color.rgb = NAVY_ACCENT
 
-    dec_pts = [
-        "1. Distance From Face Space (DFFS) - ε_d:",
-        "   ε_d = ||Γ - Γ̂||₂ = ||(I - U Uᵀ)(Γ - Ψ)||₂",
-        "   Measures orthogonal residual. If ε_d ≥ θ_f, the pattern cannot be reconstructed by face basis.",
-        "",
-        "2. Distance In Face Space (DIFS) - ε_c:",
-        "   ε_c = min_k ||Ω - Ω_k||₂",
-        "   Measures Euclidean distance to closest enrolled subject centroid.",
-        "",
-        "4 Operating Decisions:",
-        "• CASE 1: NOT A FACE (ε_d ≥ θ_f) → Non-face rejection.",
-        "• CASE 2: KNOWN FACE (ε_d < θ_f ∧ ε_c < θ_c) → Recognized as subject c*.",
-        "• CASE 3: UNKNOWN FACE (ε_d < θ_f ∧ ε_c ≥ θ_c) → Valid human face detected, candidate for enrollment.",
-        "• CASE 4: FALSE MATCH RISK (ε_d ≥ θ_f ∧ ε_c < θ_c) → Rejected by face space residual."
+    p = tf_d.add_paragraph()
+    p.text = "Why naive nearest-neighbor fails on non-faces / strangers"
+    p.font.size = Pt(10.5)
+    p.font.color.rgb = TEXT_MUTED
+
+    decision_items = [
+        ("Question 1: 'Is this input a human face?'",
+         "Tested via Distance From Face Space (DFFS, ε_d):\n"
+         "    ε_d = ||Γ - Γ̂||₂ (Reconstruction Residual)\n"
+         "Because Eigenfaces are derived solely from human faces, they CANNOT accurately reconstruct arbitrary objects (e.g. coffee mug, dog, checkerboard). "
+         "If ε_d ≥ θ_f: The system immediately rejects: REJECTED (NOT A FACE)."),
+
+        ("Question 2: 'If it is a face, whose face is it?'",
+         "Tested via Distance In Face Space (DIFS, ε_c):\n"
+         "    ε_c = min_k ||Ω - Ω_k||₂ (Subspace Euclidean Distance)\n"
+         "We measure the distance between the probe's weight vector Ω and the enrolled class centroids Ω_k."),
+
+        ("Case 2: Known Enrolled Subject",
+         "If ε_d < θ_f AND ε_c < θ_c:\n"
+         "Matched to enrolled class with minimal distance → RECOGNIZED (KNOWN FACE)."),
+
+        ("Case 3: Unseen Human Stranger (Open-Set)",
+         "If ε_d < θ_f AND ε_c ≥ θ_c:\n"
+         "Confirmed human face, but exceeds threshold for all known users → DETECTED (UNKNOWN VISITOR). Enables automated biometric enrollment.")
     ]
-    for pt in dec_pts:
+    for title, desc in decision_items:
         p = tf_d.add_paragraph()
-        p.text = pt
-        p.font.size = Pt(11)
-        p.font.color.rgb = TEXT_DARK
-
-    # ==========================================
-    # SLIDE 9: Benchmark Results & Accuracy vs K
-    # ==========================================
-    s9 = prs.slides.add_slide(blank_layout)
-    add_bg(s9)
-    add_header(s9, "8. Experimental Benchmark & Performance Results")
-
-    img_acc = os.path.join(RESULTS_DIR, "06_accuracy_vs_k.png")
-    if os.path.exists(img_acc):
-        s9.shapes.add_picture(img_acc, Inches(0.8), Inches(1.5), width=Inches(5.7))
-
-    card_bm = add_card(s9, Inches(6.8), Inches(1.5), Inches(5.7), Inches(5.4))
-    tf_bm = card_bm.text_frame
-    tf_bm.word_wrap = True
-    p = tf_bm.paragraphs[0]
-    p.text = "Empirical Results on Yale/AT&T Dataset"
-    p.font.size = Pt(15)
-    p.font.bold = True
-    p.font.color.rgb = NAVY_ACCENT
-
-    bm_pts = [
-        "• Dataset Configuration:",
-        "  - 15 subjects, 11 variations each = 165 total face images.",
-        "  - Preprocessed & aligned to 64 × 64 pixels (D = 4096).",
-        "",
-        "• Recognition Accuracy vs Components (K):",
-        "  - K = 5:  58.2% (captures only coarse lighting)",
-        "  - K = 15: 78.4% (captures basic facial structure)",
-        "  - K = 30: 86.8% (sufficient for reliable recognition)",
-        "  - K = 40: 89.2% (optimal accuracy vs efficiency tradeoff)",
-        "  - K = 50: 90.1% (plateau; extra components encode noise)",
-        "",
-        "• Dimensionality Reduction Factor:",
-        "  - 4096 dimensions → 40 components = 99.02% compression!",
-        "• Non-Face Rejection Rate: >88% on geometric & noise probes.",
-        "• Inference Speed: < 2.5 milliseconds per probe."
-    ]
-    for pt in bm_pts:
-        p = tf_bm.add_paragraph()
-        p.text = pt
-        p.font.size = Pt(11)
-        p.font.color.rgb = TEXT_DARK
-
-    # ==========================================
-    # SLIDE 10: Robustness & Failure Mode Analysis
-    # ==========================================
-    s10 = prs.slides.add_slide(blank_layout)
-    add_bg(s10)
-    add_header(s10, "9. Robustness & Failure Mode Analysis")
-
-    img_rob = os.path.join(RESULTS_DIR, "05_robustness_analysis.png")
-    if os.path.exists(img_rob):
-        s10.shapes.add_picture(img_rob, Inches(0.8), Inches(1.5), width=Inches(5.7))
-
-    card_fa = add_card(s10, Inches(6.8), Inches(1.5), Inches(5.7), Inches(5.4))
-    tf_fa = card_fa.text_frame
-    tf_fa.word_wrap = True
-    p = tf_fa.paragraphs[0]
-    p.text = "Stress Testing & Environmental Perturbations"
-    p.font.size = Pt(15)
-    p.font.bold = True
-    p.font.color.rgb = RGBColor(225, 29, 72)
-
-    fa_pts = [
-        "1. Illumination Shifts (Primary Failure Mode):",
-        "   - PCA maximizes total variance. Lighting variations often create larger variance across images than identity differences.",
-        "   - Directional side lighting causes severe classification degradation.",
-        "",
-        "2. Pose & Orientation Variations:",
-        "   - Out-of-plane head rotations (> 15°) disrupt pixel alignment, causing steep drops in DIFS proximity.",
-        "",
-        "3. Gaussian Noise & Blur:",
-        "   - Moderate noise (σ < 0.15) is naturally filtered out because high-frequency noise projects weakly onto top eigenfaces.",
-        "",
-        "4. Occlusion (Glasses, Scarves, Masks):",
-        "   - Localized occlusions inflate DFFS (ε_d), potentially causing false rejection as 'Not a Face'."
-    ]
-    for pt in fa_pts:
-        p = tf_fa.add_paragraph()
-        p.text = pt
-        p.font.size = Pt(11)
-        p.font.color.rgb = TEXT_DARK
-
-    # ==========================================
-    # SLIDE 11: Interactive Web App & Live Demo
-    # ==========================================
-    s11 = prs.slides.add_slide(blank_layout)
-    add_bg(s11)
-    add_header(s11, "10. Dual Demonstration Interfaces: CLI & Live Dashboard")
-
-    c_cli = add_card(s11, Inches(0.8), Inches(1.5), Inches(5.6), Inches(5.4))
-    tf_cli = c_cli.text_frame
-    tf_cli.word_wrap = True
-    p = tf_cli.paragraphs[0]
-    p.text = "Console Telemetry Demo (demo.py)"
-    p.font.size = Pt(15)
-    p.font.bold = True
-    p.font.color.rgb = NAVY_ACCENT
-    c_pts = [
-        "• Execution: python demo.py",
-        "• Features:",
-        "  - Clean ASCII telemetry tracing matrix dimensions.",
-        "  - Logs surrogate matrix reduction factor (279.5×).",
-        "  - Evaluates 3 real-time probes: Enrolled, Unenrolled, and Non-Face Object.",
-        "  - Displays accuracy vs K benchmark table.",
-        "  - Automatically renders 6 publication-grade figures in results/."
-    ]
-    for pt in c_pts:
-        p = tf_cli.add_paragraph()
-        p.text = pt
-        p.font.size = Pt(11.5)
-        p.font.color.rgb = TEXT_DARK
-
-    c_web = add_card(s11, Inches(6.8), Inches(1.5), Inches(5.7), Inches(5.4))
-    tf_web = c_web.text_frame
-    tf_web.word_wrap = True
-    p = tf_web.paragraphs[0]
-    p.text = "Interactive Web Dashboard (app.py)"
-    p.font.size = Pt(15)
-    p.font.bold = True
-    p.font.color.rgb = GREEN_ACCENT
-    w_pts = [
-        "• Execution: python app.py  (Serving on localhost:5050)",
-        "• Interactive Capabilities:",
-        "  1. Live Classification Hub: Click probes to see instant 4-way decision with color-coded feedback.",
-        "  2. Reconstruction Lab: Real-time slider (K ∈ [1, 50]) demonstrating progressive face synthesis.",
-        "  3. Eigenface Gallery: Interactive view of 16 ghostly eigenvectors.",
-        "  4. Embedded Theory & Viva Q&A Guide.",
-        "• Pure vanilla JS/CSS frontend with Flask REST API backend."
-    ]
-    for pt in w_pts:
-        p = tf_web.add_paragraph()
-        p.text = pt
-        p.font.size = Pt(11.5)
-        p.font.color.rgb = TEXT_DARK
-
-    # ==========================================
-    # SLIDE 12: Viva Defense & Examination Q&A
-    # ==========================================
-    s12 = prs.slides.add_slide(blank_layout)
-    add_bg(s12)
-    add_header(s12, "11. Viva Defense: Anticipated Evaluator Questions")
-
-    qa_list = [
-        ("Q1: Why do eigenvectors of Aᵀ A yield eigenvectors of A Aᵀ?",
-         "Multiplying Aᵀ A v = μ v by A on the left gives (A Aᵀ)(A v) = μ (A v). Thus u = A v / ||A v|| is an exact eigenvector of the full covariance matrix C."),
-        ("Q2: Why do eigenfaces exhibit a 'ghostly' appearance?",
-         "Eigenfaces are linear combinations of all centered training faces (u_k = ∑ v_{ki} Φ_i). Adding and subtracting facial features produces high/low intensity variation templates."),
-        ("Q3: What distinguishes DFFS from DIFS?",
-         "DFFS (ε_d = ||Γ - Γ̂||) evaluates orthogonal residual to decide if input is a face. DIFS (ε_c = min ||Ω - Ω_k||) measures distance to known identities."),
-        ("Q4: How did Fisherfaces (LDA) improve upon Eigenfaces?",
-         "PCA is unsupervised and merges lighting variance with identity. Fisherfaces (Belhumeur 1997) maximizes between-class scatter over within-class scatter, resisting lighting changes.")
-    ]
-
-    for idx, (q, a) in enumerate(qa_list):
-        row = idx // 2
-        col = idx % 2
-        x = Inches(0.8 + col * 6.0)
-        y = Inches(1.5 + row * 2.75)
-        card = add_card(s12, x, y, Inches(5.7), Inches(2.55))
-        tf_qa = card.text_frame
-        tf_qa.word_wrap = True
-
-        p = tf_qa.paragraphs[0]
-        p.text = q
-        p.font.size = Pt(12)
-        p.font.bold = True
-        p.font.color.rgb = NAVY_ACCENT
-
-        p = tf_qa.add_paragraph()
-        p.text = a
+        p.text = f"• {title}:"
         p.font.size = Pt(10.5)
+        p.font.bold = True
+        p.font.color.rgb = NAVY_DARK
+        p = tf_d.add_paragraph()
+        p.text = f"  {desc}"
+        p.font.size = Pt(9.5)
         p.font.color.rgb = TEXT_DARK
 
-    # ==========================================
-    # SLIDE 13: Summary & Conclusion
-    # ==========================================
-    s13 = prs.slides.add_slide(blank_layout)
-    add_bg(s13, NAVY_DARK)
+    dec_img = os.path.join(RESULTS_DIR, "04_decision_space_geometry.png")
+    if os.path.exists(dec_img):
+        s8_dec.shapes.add_picture(dec_img, Inches(6.8), Inches(1.4), Inches(5.7), Inches(5.7))
 
-    # Accent bar
-    top_b = s13.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0), Inches(0), Inches(13.333), Inches(0.15))
-    top_b.fill.solid()
-    top_b.fill.fore_color.rgb = NAVY_ACCENT
-    top_b.line.fill.background()
+    # =========================================================================
+    # SLIDE 9: Experimental Setup & Dataset Split
+    # =========================================================================
+    s9_setup = prs.slides.add_slide(blank_layout)
+    add_bg(s9_setup)
+    add_header(s9_setup, "Experimental Setup & Open-Set Evaluation Protocol")
 
-    t_box = s13.shapes.add_textbox(Inches(1.0), Inches(0.8), Inches(11.3), Inches(1.0))
-    tf = t_box.text_frame
-    p = tf.paragraphs[0]
-    p.text = "Key Takeaways & Conclusion"
-    p.font.size = Pt(32)
-    p.font.bold = True
-    p.font.color.rgb = TEXT_WHITE
+    setup_cards = [
+        ("The AT&T / Olivetti Dataset",
+         "400 Normalized Facial Images",
+         [
+             "• 40 distinct individuals (subjects s1 through s40).",
+             "• 10 images per subject under controlled conditions.",
+             "• Variations: Minor tilt, lighting changes, facial expressions (open/closed eyes, smiling), eyeglasses.",
+             "• Normalized dimensions: 64 × 64 pixels (grayscale)."
+         ], Inches(0.8), Inches(1.5), Inches(3.6), Inches(5.4), NAVY_ACCENT),
 
-    # 3 Summary Cards
-    cards_data = [
-        ("Mathematical Elegance", [
-            "• Pure linear algebra implementation with no ML shortcuts.",
-            "• Covariance trick reduces matrix size by 279.5×.",
-            "• Orthogonal projection eliminates redundant pixel data."
-        ], CYAN_ACCENT),
-        ("Robust 4-Way Decision", [
-            "• Dual-threshold rule reliably rejects non-faces (ε_d ≥ θ_f).",
-            "• Discriminates enrolled vs unseen human subjects.",
-            "• High accuracy (>88%) achieved with just 30-50 components."
-        ], GOLD_ACCENT),
-        ("Engineering Completeness", [
-            "• Production-quality CLI telemetry and reproducible benchmark.",
-            "• Interactive web application with real-time synthesis slider.",
-            "• Complete academic defense documentation and guide."
-        ], GREEN_ACCENT)
+        ("Open-Set Subspace Partition",
+         "Gallery, Known Probes & Unseen Subjects",
+         [
+             "• Enrolled Subjects (35 individuals):",
+             "    - 7 images/subject for training (M = 245 gallery faces).",
+             "    - 3 images/subject for testing (105 known probes).",
+             "",
+             "• Unseen / Open-Set Subjects (5 individuals):",
+             "    - Completely held out from training (50 unknown faces).",
+             "    - Tests false acceptance vs valid stranger enrollment."
+         ], Inches(4.8), Inches(1.5), Inches(3.6), Inches(5.4), AMBER_ACCENT),
+
+        ("Synthetic Non-Face Benchmark",
+         "Testing False Positive Rejection",
+         [
+             "• 20 synthetic non-face test images generated:",
+             "    - Regular checkerboards of varying frequencies.",
+             "    - High-frequency Gaussian white noise.",
+             "    - Uniform black / white / gradient fields.",
+             "",
+             "• Purpose: Verifies whether DFFS threshold (θ_f) properly rejects non-face objects rather than assigning a random identity."
+         ], Inches(8.8), Inches(1.5), Inches(3.7), Inches(5.4), ROSE_ACCENT),
     ]
 
-    for idx, (title, points, color) in enumerate(cards_data):
-        x = Inches(1.0 + idx * 3.85)
-        card = add_card(s13, x, Inches(2.0), Inches(3.6), Inches(4.5), NAVY_MEDIUM, color)
-        tf_c = card.text_frame
-        tf_c.word_wrap = True
-
-        p = tf_c.paragraphs[0]
+    for title, subtitle, bullets, left, top, width, height, accent in setup_cards:
+        card = add_card(s9_setup, left, top, width, height)
+        tf = card.text_frame
+        tf.word_wrap = True
+        p = tf.paragraphs[0]
         p.text = title
         p.font.size = Pt(15)
         p.font.bold = True
-        p.font.color.rgb = color
+        p.font.color.rgb = accent
+
+        p = tf.add_paragraph()
+        p.text = subtitle
+        p.font.size = Pt(11)
+        p.font.color.rgb = TEXT_MUTED
+
+        for b in bullets:
+            p = tf.add_paragraph()
+            p.text = b
+            p.font.size = Pt(11)
+            p.font.color.rgb = TEXT_DARK
+
+    # =========================================================================
+    # SLIDE 10: Empirical Results & Performance Benchmark
+    # =========================================================================
+    s10_res = prs.slides.add_slide(blank_layout)
+    add_bg(s10_res)
+    add_header(s10_res, "Empirical Results: Accuracy, Compression & Robustness")
+
+    acc_img = os.path.join(RESULTS_DIR, "06_accuracy_vs_k.png")
+    if os.path.exists(acc_img):
+        s10_res.shapes.add_picture(acc_img, Inches(0.8), Inches(1.45), Inches(5.6), Inches(4.2))
+
+    c_acc = add_card(s10_res, Inches(0.8), Inches(5.75), Inches(5.6), Inches(1.3))
+    tf_a = c_acc.text_frame
+    tf_a.word_wrap = True
+    p = tf_a.paragraphs[0]
+    p.text = "Recognition Accuracy vs Number of Components (K)"
+    p.font.size = Pt(11)
+    p.font.bold = True
+    p.font.color.rgb = NAVY_ACCENT
+    p = tf_a.add_paragraph()
+    p.text = "• Accuracy rises sharply from 62% at K = 2 to >88% at K = 25.\n• Plateaus between K = 35 and K = 50 at ~90% accuracy.\n• Higher components add marginal discriminative power while capturing noise."
+    p.font.size = Pt(9.5)
+    p.font.color.rgb = TEXT_DARK
+
+    rob_img = os.path.join(RESULTS_DIR, "05_robustness_analysis.png")
+    if os.path.exists(rob_img):
+        s10_res.shapes.add_picture(rob_img, Inches(6.8), Inches(1.45), Inches(5.7), Inches(4.2))
+
+    c_rob = add_card(s10_res, Inches(6.8), Inches(5.75), Inches(5.7), Inches(1.3))
+    tf_r = c_rob.text_frame
+    tf_r.word_wrap = True
+    p = tf_r.paragraphs[0]
+    p.text = "Noise Perturbation & Occlusion Tolerance"
+    p.font.size = Pt(11)
+    p.font.bold = True
+    p.font.color.rgb = EMERALD_ACCENT
+    p = tf_r.add_paragraph()
+    p.text = "• System remains stable under moderate Gaussian noise (σ ≤ 0.15).\n• Reconstructive projection acts as an intrinsic low-pass filter.\n• Degrades gracefully under center occlusions up to 25% area."
+    p.font.size = Pt(9.5)
+    p.font.color.rgb = TEXT_DARK
+
+    # =========================================================================
+    # SLIDE 11: Comparative Evolution: 1991 to Present
+    # =========================================================================
+    s11_comp = prs.slides.add_slide(blank_layout)
+    add_bg(s11_comp)
+    add_header(s11_comp, "Comparative Analysis: Evolution of Face Recognition")
+
+    cols = [
+        ("1. Eigenfaces (PCA)",
+         "Turk & Pentland (1991)",
+         [
+             "• Paradigm: Unsupervised linear dimensionality reduction.",
+             "• Objective: Maximizes total variance across all images.",
+             "• Training Speed: Instantaneous (~0.14 s on CPU).",
+             "• Data Required: 5–10 samples per subject.",
+             "• Strengths: Mathematically transparent, lightweight, zero GPU needed.",
+             "• Weakness: Sensitive to extreme illumination and pose changes."
+         ], Inches(0.8), Inches(1.5), Inches(3.6), Inches(5.4), NAVY_ACCENT),
+
+        ("2. Fisherfaces (LDA)",
+         "Belhumeur et al. (1997)",
+         [
+             "• Paradigm: Supervised linear discriminant analysis.",
+             "• Objective: Maximizes between-class scatter while minimizing within-class scatter.",
+             "• Training Speed: Very fast (<1 s).",
+             "• Illumination Invariance: Discards top 3 eigenvectors to eliminate lighting variations.",
+             "• Strengths: More robust to shadows and lighting than standard PCA.",
+             "• Weakness: Suffers from Small Sample Size (SSS) problem if M < D."
+         ], Inches(4.8), Inches(1.5), Inches(3.6), Inches(5.4), AMBER_ACCENT),
+
+        ("3. Deep Embeddings",
+         "FaceNet / ArcFace (2015+)",
+         [
+             "• Paradigm: Deep Convolutional Neural Networks (CNNs).",
+             "• Objective: Non-linear metric learning on hyperspherical embeddings.",
+             "• Training Speed: Compute-intensive (hours/days on GPU clusters).",
+             "• Data Required: Millions of images (MS-Celeb-1M, VGGFace2).",
+             "• Strengths: Invariant to extreme poses, occlusions, and expressions.",
+             "• Weakness: Black-box nature, heavy computational demands."
+         ], Inches(8.8), Inches(1.5), Inches(3.7), Inches(5.4), EMERALD_ACCENT),
+    ]
+
+    for title, subtitle, bullets, left, top, width, height, accent in cols:
+        card = add_card(s11_comp, left, top, width, height)
+        tf = card.text_frame
+        tf.word_wrap = True
+        p = tf.paragraphs[0]
+        p.text = title
+        p.font.size = Pt(15)
+        p.font.bold = True
+        p.font.color.rgb = accent
+
+        p = tf.add_paragraph()
+        p.text = subtitle
+        p.font.size = Pt(11)
+        p.font.color.rgb = TEXT_MUTED
+
+        for b in bullets:
+            p = tf.add_paragraph()
+            p.text = b
+            p.font.size = Pt(10.5)
+            p.font.color.rgb = TEXT_DARK
+
+    # =========================================================================
+    # SLIDE 12: Real-Time Demonstration Interfaces
+    # =========================================================================
+    s12_demo = prs.slides.add_slide(blank_layout)
+    add_bg(s12_demo)
+    add_header(s12_demo, "Demonstration Interfaces: CLI Benchmark & Web GUI")
+
+    c_app = add_card(s12_demo, Inches(0.8), Inches(1.5), Inches(5.6), Inches(5.4))
+    tf_app = c_app.text_frame
+    tf_app.word_wrap = True
+    p = tf_app.paragraphs[0]
+    p.text = "Interactive Web Dashboard (app.py)"
+    p.font.size = Pt(16)
+    p.font.bold = True
+    p.font.color.rgb = NAVY_ACCENT
+
+    p = tf_app.add_paragraph()
+    p.text = "Live Interactive Demonstration Interface"
+    p.font.size = Pt(12)
+    p.font.color.rgb = TEXT_MUTED
+
+    app_features = [
+        ("Live Probe Classification", "Clickable gallery of enrolled subjects, open-set strangers, and synthetic non-faces."),
+        ("Visual Status Banners", "Instant color-coded decision outcomes:\n  • Green: Recognized Enrolled Subject\n  • Blue: Detected Unenrolled Stranger\n  • Red: Rejected Non-Face Pattern"),
+        ("Face Reconstruction Lab", "Interactive slider dynamically adjusts K ∈ [1, 50], visually showing facial details emerging in real time."),
+        ("Dual Metric Gauges", "Real-time readout of ε_d (DFFS) and ε_c (DIFS) against calibrated thresholds θ_f and θ_c.")
+    ]
+    for title, desc in app_features:
+        p = tf_app.add_paragraph()
+        p.text = f"• {title}:"
+        p.font.size = Pt(11.5)
+        p.font.bold = True
+        p.font.color.rgb = NAVY_DARK
+        p = tf_app.add_paragraph()
+        p.text = f"  {desc}"
+        p.font.size = Pt(10.5)
+        p.font.color.rgb = TEXT_DARK
+
+    c_cli = add_card(s12_demo, Inches(6.8), Inches(1.5), Inches(5.7), Inches(5.4))
+    tf_cli = c_cli.text_frame
+    tf_cli.word_wrap = True
+    p = tf_cli.paragraphs[0]
+    p.text = "Automated Terminal Benchmark (demo.py)"
+    p.font.size = Pt(16)
+    p.font.bold = True
+    p.font.color.rgb = EMERALD_ACCENT
+
+    p = tf_cli.add_paragraph()
+    p.text = "End-to-End Command-Line Pipeline"
+    p.font.size = Pt(12)
+    p.font.color.rgb = TEXT_MUTED
+
+    cli_features = [
+        ("Pure NumPy Architecture", "100% from-scratch linear algebra without scikit-learn PCA black-boxes."),
+        ("Diagnostic Telemetry", "Outputs detailed matrix dimensions, reduction factors (279.5×), and eigen-decomposition timings."),
+        ("Automated Evaluation", "Executes 4-way decision matrix across all probe sets and outputs confusion statistics."),
+        ("Publication-Grade Plots", "Automatically generates all 6 analytical figures in the results/ directory.")
+    ]
+    for title, desc in cli_features:
+        p = tf_cli.add_paragraph()
+        p.text = f"• {title}:"
+        p.font.size = Pt(11.5)
+        p.font.bold = True
+        p.font.color.rgb = NAVY_DARK
+        p = tf_cli.add_paragraph()
+        p.text = f"  {desc}"
+        p.font.size = Pt(10.5)
+        p.font.color.rgb = TEXT_DARK
+
+    # =========================================================================
+    # SLIDE 13: Summary & Academic Takeaways
+    # =========================================================================
+    s13_conc = prs.slides.add_slide(blank_layout)
+    add_bg(s13_conc, NAVY_DARK)
+
+    top_b = s13_conc.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0), Inches(0), Inches(13.333), Inches(0.15))
+    top_b.fill.solid()
+    top_b.fill.fore_color.rgb = CYAN_ACCENT
+    top_b.line.fill.background()
+
+    t_box = s13_conc.shapes.add_textbox(Inches(1.0), Inches(0.8), Inches(11.3), Inches(1.1))
+    tf = t_box.text_frame
+    p = tf.paragraphs[0]
+    p.text = "Summary of Contributions & Academic Takeaways"
+    p.font.size = Pt(28)
+    p.font.bold = True
+    p.font.color.rgb = TEXT_WHITE
+
+    p = tf.add_paragraph()
+    p.text = "Eigenfaces (Turk & Pentland, 1991) Implementation"
+    p.font.size = Pt(14)
+    p.font.color.rgb = CYAN_ACCENT
+
+    c_conc = add_card(s13_conc, Inches(1.0), Inches(2.1), Inches(11.33), Inches(4.7), NAVY_CARD, NAVY_ACCENT)
+    tf_c = c_conc.text_frame
+    tf_c.word_wrap = True
+
+    conclusions = [
+        ("1. Mathematical Rigor", "Implemented exact PCA and Turk-Pentland surrogate trick (L = A^T A) using pure linear algebra in NumPy, reducing computation by 279.5×."),
+        ("2. High Compression Ratio", "Compressed 4,096-pixel facial images into 40 scalar weights (99.02% reduction) while preserving ~90% recognition accuracy."),
+        ("3. Complete 4-Way Decision Framework", "Dual thresholds (θ_f and θ_c) accurately discriminate between enrolled subjects, unknown human strangers, and non-face objects."),
+        ("4. Edge Computing Suitability", "Instantaneous CPU training (~0.14 s) and microsecond inference make it ideal for embedded biometric IoT devices."),
+        ("5. Open-Source Verification", "Fully reproducible codebase with CLI benchmarks, interactive GUI dashboard, and comprehensive test suite.")
+    ]
+
+    for title, desc in conclusions:
+        p = tf_c.add_paragraph()
+        p.text = f"•  {title}:"
+        p.font.size = Pt(13)
+        p.font.bold = True
+        p.font.color.rgb = AMBER_ACCENT
 
         p = tf_c.add_paragraph()
-        p.text = ""
+        p.text = f"   {desc}"
+        p.font.size = Pt(11.5)
+        p.font.color.rgb = TEXT_WHITE
 
-        for pt in points:
-            p = tf_c.add_paragraph()
-            p.text = pt
-            p.font.size = Pt(12)
-            p.font.color.rgb = RGBColor(241, 245, 249)
+    p_end = tf_c.add_paragraph()
+    p_end.text = "\nThank You! Ready for Questions & Discussion."
+    p_end.font.size = Pt(16)
+    p_end.font.bold = True
+    p_end.font.color.rgb = CYAN_ACCENT
+    p_end.alignment = PP_ALIGN.CENTER
 
-    # Save presentation
     prs.save(OUTPUT_PPTX)
-    print(f"Presentation successfully created at: {OUTPUT_PPTX}")
+    print(f"Presentation saved successfully to: {OUTPUT_PPTX}")
 
 
 if __name__ == "__main__":
-    create_deck()
+    build_deck()

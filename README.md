@@ -45,19 +45,58 @@ Simply double-click [`index.html`](file:///Users/emty/balls/eigen_faces/index.ht
 
 ---
 
-## 📁 Simple Project Structure
+## 📁 Project Structure
 
-```
+```text
 eigen_faces/
-├── main.py                   # ⭐ Main code with all algorithms (Turk & Pentland 1991)
-├── index.html                # ⭐ Standalone HTML showcase for code, math & graphs
+├── main.py                             # ⭐ Core runnable implementation with PCA & 4-way decision rules
+├── demo.py                             # Automated console demonstration with telemetry & benchmark tables
+├── app.py                              # Flask web server hosting interactive UI, slides & reports
+├── index.html                          # Standalone browser dashboard showcasing algorithms & interactive plots
+│
 ├── data/
-│   └── olivetti_py3.pkz      # ⭐ Bundled AT&T / Olivetti Face Dataset (offline)
-├── results/
-│   └── bw/                   # High-contrast figures (Eigenfaces gallery, scree plot, etc.)
-├── REPORT.html               # Comprehensive print-ready university report (B&W compatible)
-├── REPORT.md                 # Markdown version of full university report
-└── requirements.txt          # Python dependencies (numpy, scipy, scikit-learn, joblib)
+│   └── olivetti_py3.pkz                # Bundled AT&T / Olivetti Face Dataset (offline ready)
+│
+├── src/                                # Modular algorithms and utility functions
+│   ├── dataset.py                      # Dataset loading and train/test probe partitioning
+│   ├── eigenfaces.py                   # Eigenfaces model with Turk-Pentland covariance reduction
+│   ├── evaluate.py                     # Identification accuracy, reconstruction error & decision rules
+│   ├── visualizer.py                   # Publication-quality matplotlib plotting suite
+│   ├── generate_bw_figures.py          # Generator for high-contrast B&W figures
+│   └── build_html_report.py            # Automated builder for comprehensive university report
+│
+├── results/                            # Generated output graphs and publication figures
+│   ├── output_summary.png              # 4-panel visual summary produced by main.py
+│   ├── 01_eigenfaces_gallery.png       # Eigenfaces visual basis gallery
+│   ├── 02_eigenvalue_scree_plot.png    # Variance distribution and scree plot
+│   ├── 03_face_reconstruction.png      # Original vs. reconstructed face comparison
+│   ├── 04_decision_space_geometry.png  # Turk & Pentland 4-way decision space geometry
+│   ├── 05_robustness_analysis.png      # Occlusion and Gaussian noise robustness tests
+│   ├── 06_accuracy_vs_k.png            # Recognition accuracy and error vs. subspace dimension K
+│   └── bw/                             # Black & white high-contrast figures for academic print
+│
+├── tests/
+│   └── test_eigenfaces.py              # Mathematical and unit test suite
+│
+├── templates/
+│   └── index.html                      # HTML template for Flask web server
+├── static/                             # Static CSS/JS assets for web UI
+│
+├── Presentation & Viva Materials:
+│   ├── EigenFaces_Presentation.pptx    # 16:9 widescreen presentation deck
+│   ├── slides.html                     # Interactive browser slide deck with speaker notes (press 'N')
+│   ├── EigenFaces_Teleprompter_Script.docx # Teleprompter speech script for presentation
+│   ├── PRESENTATION_GUIDE.md           # 10-minute presentation guide, viva defense Q&A & derivations
+│   ├── generate_pptx.py                # Script to regenerate PowerPoint presentation
+│   └── create_teleprompter_docx.py     # Script to regenerate teleprompter script docx
+│
+├── Documentation & Academic Report:
+│   ├── REPORT.html                     # Comprehensive university project report (with embedded KaTeX & figures)
+│   ├── REPORT.md                       # University project report in Markdown format
+│   └── eigen_faces.pdf                 # Original 1991 paper by Turk & Pentland
+│
+├── requirements.txt                    # Python package dependencies
+└── .gitignore                          # Git ignore configuration
 ```
 
 ---

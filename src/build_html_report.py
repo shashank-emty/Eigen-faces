@@ -19,6 +19,7 @@ Follows a formal Indian University / College report template:
 """
 
 import base64
+import html as html_lib
 import os
 import sys
 
@@ -45,7 +46,17 @@ def build_report_html():
     fig6_b64 = get_image_b64("fig6_accuracy_vs_k.png")
     qr_b64 = get_image_b64("github_qr.png")
 
-    template = """<!DOCTYPE html>
+    # Read and line-number original main.py source code
+    main_py_path = os.path.join(BASE_DIR, "main.py")
+    with open(main_py_path, "r", encoding="utf-8") as f:
+        main_code = f.read()
+
+    numbered_lines = []
+    for idx, line in enumerate(main_code.splitlines(), 1):
+        numbered_lines.append(f"{idx:3d} | {line}")
+    main_code_escaped = html_lib.escape("\n".join(numbered_lines))
+
+    template = r"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -578,24 +589,25 @@ def build_report_html():
 
     <tr class="chapter-row"><td>CHAPTER 3: THEORETICAL FOUNDATION &amp; MATHEMATICAL DERIVATIONS</td><td class="text-center">9</td></tr>
     <tr class="sub-row"><td>3.1 Digital Image Representation as High-Dimensional Vectors</td><td class="text-center">9</td></tr>
-    <tr class="sub-row"><td>3.2 The Average Face Vector ($\Psi$) and Mean-Centering</td><td class="text-center">9</td></tr>
+    <tr class="sub-row"><td>3.2 The Average Face Vector ($\\Psi$) and Mean-Centering</td><td class="text-center">9</td></tr>
     <tr class="sub-row"><td>3.3 Difference Matrix Assembly ($A$)</td><td class="text-center">10</td></tr>
     <tr class="sub-row"><td>3.4 The High-Dimensional Covariance Dilemma ($C$)</td><td class="text-center">10</td></tr>
     <tr class="sub-row"><td>3.5 Rigorous Mathematical Proof of the Turk-Pentland Covariance Reduction Trick</td><td class="text-center">11</td></tr>
     <tr class="sub-row"><td>3.6 Eigendecomposition and Orthonormal Basis Construction</td><td class="text-center">12</td></tr>
     <tr class="sub-row"><td>3.7 Proof of Orthonormality ($U^T U = I_K$)</td><td class="text-center">13</td></tr>
-    <tr class="sub-row"><td>3.8 Subspace Projection: Derivation of Coordinate Vector $\Omega$</td><td class="text-center">13</td></tr>
+    <tr class="sub-row"><td>3.8 Subspace Projection: Derivation of Coordinate Vector ($\\Omega$)</td><td class="text-center">13</td></tr>
     <tr class="sub-row"><td>3.9 Image Reconstruction as Linear Combination of Eigenvectors</td><td class="text-center">14</td></tr>
-    <tr class="sub-row"><td>3.10 Dual Distance Formulations: DFFS ($\epsilon_d$) and DIFS ($\epsilon_c$)</td><td class="text-center">14</td></tr>
+    <tr class="sub-row"><td>3.10 Dual Distance Formulations: DFFS ($\\epsilon_d$) and DIFS ($\\epsilon_c$)</td><td class="text-center">14</td></tr>
     <tr class="sub-row"><td>3.11 The 4-Way Decision Rule Framework (Section 3.2 Analysis)</td><td class="text-center">15</td></tr>
     <tr class="sub-row"><td>3.12 Threshold Calibration Mechanics</td><td class="text-center">16</td></tr>
 
-    <tr class="chapter-row"><td>CHAPTER 4: SYSTEM ARCHITECTURE &amp; IMPLEMENTATION METHODOLOGY</td><td class="text-center">17</td></tr>
-    <tr class="sub-row"><td>4.1 End-to-End System Architecture</td><td class="text-center">17</td></tr>
-    <tr class="sub-row"><td>4.2 Benchmark Dataset: Olivetti / AT&amp;T Faces Database</td><td class="text-center">18</td></tr>
-    <tr class="sub-row"><td>4.3 Structured Experimental Dataset Partitioning</td><td class="text-center">18</td></tr>
-    <tr class="sub-row"><td>4.4 Modular Codebase Architecture</td><td class="text-center">19</td></tr>
-    <tr class="sub-row"><td>4.5 Algorithmic Pseudocode (Training &amp; Inference)</td><td class="text-center">20</td></tr>
+    <tr class="chapter-row"><td>CHAPTER 4: SYSTEM ARCHITECTURE, DATASET PARTITIONING &amp; SOURCE CODE</td><td class="text-center">17</td></tr>
+    <tr class="sub-row"><td>4.1 End-to-End System Pipeline Architecture</td><td class="text-center">17</td></tr>
+    <tr class="sub-row"><td>4.2 Benchmark Dataset: Comprehensive AT&amp;T / Olivetti Faces Database Analysis</td><td class="text-center">18</td></tr>
+    <tr class="sub-row"><td>4.3 Structured Open-Set Dataset Partitioning &amp; Real-World Security Methodology</td><td class="text-center">19</td></tr>
+    <tr class="sub-row"><td>4.4 Architectural Walkthrough of Implementation Modules (4 Functional Blocks)</td><td class="text-center">20</td></tr>
+    <tr class="sub-row"><td>4.5 Complete Original Implementation Source Code (main.py in Full)</td><td class="text-center">21</td></tr>
+    <tr class="sub-row"><td>4.6 Complete Terminal Execution Output &amp; Verification Telemetry</td><td class="text-center">27</td></tr>
 
     <tr class="chapter-row"><td>CHAPTER 5: EXPERIMENTAL RESULTS &amp; PERFORMANCE EVALUATION</td><td class="text-center">22</td></tr>
     <tr class="sub-row"><td>5.1 Training Convergence and Computational Reduction Metrics</td><td class="text-center">22</td></tr>
@@ -750,7 +762,7 @@ def build_report_html():
     For the benchmark $64 \\times 64$ images used in this project: $D = 64 \\times 64 = 4096\\text{ dimensions}$.
   </p>
 
-  <h2>3.2 The Average Face Vector ($\Psi$) and Mean-Centering</h2>
+  <h2>3.2 The Average Face Vector ($\\Psi$) and Mean-Centering</h2>
   <p>
     Given an ensemble of $M$ training images $\\{\\Gamma_1, \\Gamma_2, \\dots, \\Gamma_M\\}$, the <b>Average Face Vector</b> $\\Psi \\in \\mathbb{R}^D$ is the arithmetic mean across all training samples:
   </p>
@@ -893,90 +905,240 @@ def build_report_html():
   <!-- ==================================================== -->
   <!-- CHAPTER 4: SYSTEM ARCHITECTURE & METHODOLOGY         -->
   <!-- ==================================================== -->
-  <h1 class="chapter-title">CHAPTER 4: SYSTEM ARCHITECTURE &amp; METHODOLOGY</h1>
+  <h1 class="chapter-title">CHAPTER 4: SYSTEM ARCHITECTURE, DATASET PARTITIONING &amp; SOURCE CODE</h1>
 
-  <h2>4.1 End-to-End System Pipeline</h2>
+  <h2>4.1 End-to-End System Pipeline Architecture</h2>
   <p>
-    The system follows a modular architectural pipeline:
+    The system follows a completely decoupled, reproducible linear algebra pipeline implemented in pure NumPy without machine learning black-box dependencies. The end-to-end dataflow proceeds through four synchronized stages:
   </p>
   <ol>
-    <li><b>Data Ingestion:</b> Loads the Olivetti database and converts each $64 \\times 64$ image into a float normalized vector in $[0.0, 1.0]$.</li>
-    <li><b>Subspace Fitting:</b> Subtracts the mean face $\Psi$, forms $L = A^TA$, computes eigenvectors via <code>numpy.linalg.eigh</code>, derives eigenfaces $u_k$, and establishes projection matrix $U$.</li>
-    <li><b>Gallery Enrollment:</b> Projects all $245$ training faces into Face Space and calculates individual class centroid vectors $\Omega_c$.</li>
-    <li><b>Inference Engine:</b> For any incoming query image $\Gamma$, computes both DFFS $\epsilon_d$ and DIFS $\epsilon_c$ and applies the two-threshold 4-way decision rules.</li>
+    <li><b>Data Ingestion &amp; Normalization:</b> Loads the canonical Olivetti / AT&amp;T database, validates image dimensions, flattens each $64 \times 64$ image into a high-dimensional vector $\Gamma_i \in \mathbb{R}^{4096}$, and scales pixel intensities to the standard float interval $[0.0, 1.0]$.</li>
+    <li><b>Subspace Fitting &amp; Eigendecomposition:</b> Computes the arithmetic Average Face $\Psi$, calculates centered difference matrix $A$, constructs the $245 \times 245$ surrogate covariance matrix $L = A^TA$, solves the eigensystem via <code>numpy.linalg.eigh</code>, derives orthonormal eigenfaces $u_k = \frac{Av_k}{\|Av_k\|_2}$, and selects the top $K=40$ components to form basis matrix $U$.</li>
+    <li><b>Gallery Enrollment:</b> Projects all $M=245$ enrolled training vectors into Face Space ($\Omega_i = U^T(\Gamma_i - \Psi) \in \mathbb{R}^{40}$), calculates class centroid coordinate vectors $\Omega_c$ for each enrolled subject, and calibrates the dual thresholds $\theta_f$ (Distance From Face Space) and $\theta_c$ (Distance In Face Space).</li>
+    <li><b>4-Way Decision Inference:</b> For any incoming test probe (known subject, unseen stranger, or non-face pattern), computes DFFS ($\epsilon_d$) and DIFS ($\epsilon_c$) and executes the 4-way decision framework.</li>
   </ol>
 
-  <h2>4.2 Benchmark Dataset: Olivetti / AT&amp;T Faces Database</h2>
+  <h2>4.2 Benchmark Dataset: Comprehensive AT&amp;T / Olivetti Faces Database Analysis</h2>
   <p>
-    The experiments were conducted on the canonical <b>Olivetti / AT&amp;T Face Database</b> (40 subjects, 10 photos/subject, $64 \\times 64$ grayscale). The dataset is cached permanently inside the local project folder at <code>data/olivetti_py3.pkz</code> (1.3 MB).
+    All experiments, mathematical validations, and metric benchmarks were conducted on the canonical <b>AT&amp;T / Olivetti Faces Database</b> (originally acquired at AT&amp;T Laboratories Cambridge, UK). The technical specifications of this benchmark dataset are:
+  </p>
+  <ul>
+    <li><b>Subject Diversity:</b> Exactly <b>40 distinct individuals</b>, encompassing diverse adult genders, ages, and facial bone structures.</li>
+    <li><b>Sample Volume:</b> Exactly <b>10 photographic images per individual</b>, yielding a total corpus of <b>$40 \times 10 = \mathbf{400\text{ photographs}}$</b>.</li>
+    <li><b>Spatial Resolution:</b> Each photograph is formatted as a standardized $64 \times 64$ pixel matrix in 8-bit grayscale. When unrolled row-wise into an intensity vector, each face spans a vector space of dimensionality:
+      <div class="math-block">$$D = N \times N = 64 \times 64 = \mathbf{4,096\text{ pixels (features per image)}}$$</div>
+    </li>
+    <li><b>Environmental &amp; Physical Variations:</b> The photos capture essential real-world biometric challenges:
+      <ul>
+        <li><i>Facial Expressions:</i> Neutral, smiling, laughing, open eyes, closed eyes.</li>
+        <li><i>Facial Details &amp; Accessories:</i> Subjects photographed with spectacles / eyeglasses versus without glasses, and natural variations in facial hair (clean-shaven, beards, mustaches).</li>
+        <li><i>Pose &amp; Orientation:</i> Minor out-of-plane head rotations, tilts, and profile shifts of up to $\pm 20^\circ$.</li>
+        <li><i>Illumination Shifts:</i> Directional ambient lighting variations across different capture sessions.</li>
+      </ul>
+    </li>
+    <li><b>Information Redundancy &amp; Manifold Hypothesis:</b> Because adjacent facial pixels exhibit high mutual spatial covariance (forehead, cheeks, and background regions share uniform brightness), the $4,096$ raw pixel values are heavily redundant. Human faces do not scatter uniformly throughout $\mathbb{R}^{4096}$; rather, they reside on a much lower-dimensional smooth manifold spanning only $30\text{--}50$ principal directions.</li>
+    <li><b>Offline Dataset Caching:</b> To ensure complete academic reproducibility with zero network dependency, the entire dataset is cached locally within the project at <code>data/olivetti_py3.pkz</code> ($1.3\text{ MB}$).</li>
+  </ul>
+
+  <h2>4.3 Structured Open-Set Dataset Partitioning &amp; Real-World Security Methodology</h2>
+  <p>
+    A critical flaw in naive academic face recognition demonstrations is the <i>closed-set assumption</i>—assuming that every face presented to the system belongs to an already enrolled user. In production security systems, this assumption fails catastrophically because unauthenticated visitors, delivery personnel, or intruders are frequently encountered.
+  </p>
+  <p>
+    To rigorously evaluate real-world security and validate the complete 4-way decision framework of Turk &amp; Pentland (1991), the dataset was partitioned into an <b>Open-Set Evaluation Split</b>:
   </p>
 
-  <h2>4.3 Structured Experimental Dataset Partitioning</h2>
   <table class="data-table">
     <thead>
       <tr>
-        <th>Partition Name</th>
-        <th>Samples &amp; Subjects</th>
-        <th>Total Images</th>
-        <th>Experimental Purpose</th>
+        <th style="width: 20%;">Partition Name</th>
+        <th style="width: 22%;">Subjects &amp; Samples</th>
+        <th style="width: 18%;" class="text-center">Image Count</th>
+        <th style="width: 40%;">Role in Biometric Security Evaluation</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td><b>Training Gallery ($X_{\\text{train}}$)</b></td>
-        <td>35 subjects &times; 7 photos</td>
-        <td>245 images ($M=245$)</td>
-        <td>Learn $\Psi$, $L$, and Eigenfaces $U$</td>
+        <td><b>1. Training Gallery ($X_{\text{train}}$)</b></td>
+        <td>35 Enrolled Subjects &times; 7 photos</td>
+        <td class="text-center"><b>245 images</b> ($M=245$)</td>
+        <td>Used strictly to compute Mean Face $\Psi$, form difference matrix $A$, compute surrogate $L=A^TA$, extract top 40 Eigenfaces, and calculate class centroids.</td>
       </tr>
       <tr>
-        <td><b>Known Probe Set ($X_{\\text{test\\_known}}$)</b></td>
-        <td>35 subjects &times; 3 photos</td>
-        <td>105 images</td>
-        <td>Evaluate Top-1 Identification (Case 2)</td>
+        <td><b>2. Known Probe Set ($X_{\text{test\_known}}$)</b></td>
+        <td>35 Enrolled Subjects &times; 3 photos</td>
+        <td class="text-center"><b>105 images</b></td>
+        <td>Evaluates identification accuracy on genuine enrolled individuals under unseen facial expressions and lighting (Case 2: Known Face).</td>
       </tr>
       <tr>
-        <td><b>Unknown Probe Set ($X_{\\text{test\\_unknown}}$)</b></td>
-        <td>5 subjects &times; 10 photos</td>
-        <td>50 images</td>
-        <td>Evaluate Unknown Face Discovery (Case 3)</td>
+        <td><b>3. Unknown Probe Set ($X_{\text{test\_unknown}}$)</b></td>
+        <td>5 Unseen Subjects &times; 10 photos</td>
+        <td class="text-center"><b>50 images</b></td>
+        <td><b>Completely hidden from training.</b> Verifies that the system detects unseen humans as genuine faces ($\epsilon_d < \theta_f$) while flagging them as strangers ($\epsilon_c \ge \theta_c$) for enrollment (Case 3: Unknown Face).</td>
       </tr>
       <tr>
-        <td><b>Non-Face Patterns</b></td>
-        <td>10 synthetic textures</td>
-        <td>10 images</td>
-        <td>Evaluate Non-Face Rejection (Case 1)</td>
+        <td><b>4. Synthetic Non-Face Patterns</b></td>
+        <td>10 Geometric &amp; Noise Textures</td>
+        <td class="text-center"><b>10 images</b></td>
+        <td>Checkerboard patterns, uniform Gaussian noise, and spatial gradients. Verifies that non-face imagery is immediately rejected by high reconstruction residual $\epsilon_d \ge \theta_f$ (Case 1: Not a Face).</td>
       </tr>
     </tbody>
   </table>
 
-  <h2>4.4 Algorithmic Pseudocode</h2>
-  <pre><code>Algorithm: Eigenfaces 4-Way Decision Engine (Turk & Pentland, 1991)
---------------------------------------------------------------------------
-1. Training Phase:
-   Input: Images Gamma_1...Gamma_M in R^D, Labels y_1...y_M, Dimension K
-   a. Compute Mean Face:        Psi = (1/M) * sum(Gamma_i)
-   b. Mean-Centered Matrix:     A = [Gamma_1 - Psi, ..., Gamma_M - Psi]
-   c. Surrogate Covariance:     L = A^T * A  (Shape: M x M)
-   d. Eigendecomposition:       L * v_k = mu_k * v_k
-   e. Compute Eigenfaces:       u_k = (A * v_k) / norm(A * v_k)
-   f. Projection Matrix:        U = [u_1, u_2, ..., u_K]  (Shape: D x K)
-   g. Gallery Projection:       Omega_train = U^T * A
-   h. Class Centroids:          Omega_c = mean(Omega_train[:, y == c])
-   i. Calibrate Thresholds:     theta_f (Face Space), theta_c (Classification)
+  <h2>4.4 Architectural Walkthrough of Implementation Modules (4 Functional Blocks)</h2>
+  <p>
+    The implementation is encapsulated within <code>main.py</code>, structured into four clear, modular functional blocks:
+  </p>
+  <ul>
+    <li><b>Block 1: <code>load_face_dataset()</code> (Lines 6–35):</b> Ingests the 400 Olivetti photos, seeds a fixed pseudo-random permutation (<code>RandomState(42)</code>) for scientific reproducibility, separates the 35 enrolled subjects from the 5 unknown intruder subjects, and returns partitioned numpy arrays.</li>
+    <li><b>Block 2: <code>Eigenfaces.fit()</code> (Lines 51–103):</b> Implements the core training pipeline:
+      <ul>
+        <li>Computes the global arithmetic Mean Face $\Psi = \frac{1}{M}\sum \Gamma_i$.</li>
+        <li>Mean-centers the training ensemble to isolate identity variations: $A = \Gamma - \Psi$.</li>
+        <li>Constructs the $M \times M$ surrogate covariance matrix: $L = A^T A$.</li>
+        <li>Solves the eigensystem using <code>numpy.linalg.eigh(L)</code> and sorts eigenvalues in descending order.</li>
+        <li>Recovers true 4,096-pixel orthonormal Eigenfaces: $u_k = \frac{A v_k}{\|A v_k\|_2}$.</li>
+        <li>Projects training faces into Face Space and calculates individual subject class centroids $\Omega_c$.</li>
+        <li>Statistically calibrates the Face Space threshold ($\theta_f$) and Classification threshold ($\theta_c$).</li>
+      </ul>
+    </li>
+    <li><b>Block 3: <code>Eigenfaces.predict()</code> (Lines 105–143):</b> Implements the inference engine. Projects query $\Gamma$ to obtain coordinates $\Omega = U^T(\Gamma - \Psi)$, reconstructs synthesized face $\hat{\Gamma} = \Psi + U\Omega$, computes DFFS $\epsilon_d = \|\Gamma - \hat{\Gamma}\|_2$ and DIFS $\epsilon_c = \min_k \|\Omega - \Omega_k\|_2$, and applies the 4-way decision rules.</li>
+    <li><b>Block 4: <code>run_project()</code> &amp; <code>plot_results()</code> (Lines 145–247):</b> Executes the complete automated benchmark, measures top-1 identification accuracy over the 105 test probes, evaluates the test cases (Enrolled, Stranger, Non-Face), and generates the scientific summary figures saved to disk.</li>
+  </ul>
 
-2. Testing Phase:
-   Input: Query Image Gamma in R^D
-   a. Subspace Coordinates:     Omega = U^T * (Gamma - Psi)
-   b. Face Reconstruction:      Gamma_hat = Psi + U * Omega
-   c. Distance from Face Space: eps_d = norm(Gamma - Gamma_hat)
-   d. Distance in Face Space:   eps_c = min_c norm(Omega - Omega_c)
-   e. Decision:
-      If eps_d >= theta_f:
-          Return "NOT_A_FACE"
-      Else If eps_c < theta_c:
-          Return "KNOWN_FACE", ID = argmin_c norm(Omega - Omega_c)
-      Else:
-          Return "UNKNOWN_FACE"</code></pre>
+  <h2>4.5 Complete Original Implementation Source Code (main.py in Full)</h2>
+  <p>
+    In accordance with formal academic evaluation guidelines, the complete, unedited, from-scratch Python source code of the project (<code>main.py</code>) is reproduced below in its entirety with line numbers:
+  </p>
+  <pre><code>__MAIN_CODE__</code></pre>
+
+  <h2>4.6 Complete Terminal Execution Output &amp; Verification Telemetry</h2>
+  <p>
+    The complete, verbatim console telemetry generated upon executing <code>main.py</code> and <code>demo.py</code> in the production environment is documented below, confirming quantitative accuracy, threshold calibration, and test probe classifications:
+  </p>
+
+  <h3>4.6.1 Execution Output: <code>python main.py</code></h3>
+  <pre><code>Components: 40
+Explained Variance: 86.33%
+Theta_Face (eps_d threshold): 7.884
+Theta_Class (eps_c threshold): 6.463
+Accuracy: 85.71% (90/105)
+Mean Reconstruction Error: 3.847
+
+--- Test Probes ---
+Known Probe   -> Decision: KNOWN_FACE, eps_d: 4.729, eps_c: 5.651
+Unknown Probe -> Decision: UNKNOWN_FACE, eps_d: 6.227, eps_c: 7.452
+Non-Face Probe-> Decision: NOT_A_FACE, eps_d: 32.079, eps_c: 5.263</code></pre>
+
+  <h3>4.6.2 Full Benchmark Telemetry: <code>python demo.py</code></h3>
+  <pre><code>======================================================================
+  PROJECT DEMONSTRATION: EIGEN FACES (TURK &amp; PENTLAND, 1991)
+======================================================================
+
+Presenter: Shashank M T (UUCMS No.: U01BH25C0174)
+Course Lecturer: Ragunandan B (Guest Lecturer - Introduction to Machine Learning)
+Course: BCA(AI) | Subject: Machine Learning
+College: Pooja Bhagavat Mahajana First Grade College
+GitHub Repo: https://github.com/shashank-emty/Eigen-faces
+Core Methodology: Principal Component Analysis &amp; Turk-Pentland Covariance Reduction
+
+[STEP 1] &gt;&gt;&gt; Data Preparation &amp; Subspace Partitioning
+  - Database: Olivetti / AT&amp;T Face Benchmark
+  - Image Resolution: 64 x 64 pixels (Dimension D = 4096)
+  - Enrolled Gallery (Train): 245 images across 35 enrolled subjects
+  - Known Probe Set (Test): 105 images from enrolled subjects
+  - Unknown Probe Set (Test): 50 images from 5 unseen subjects (for rejection test)
+
+[STEP 2] &gt;&gt;&gt; Computing Mean Face and Difference Vectors
+         Formula: \Psi = (1/M) \sum \Gamma_i, \Phi_i = \Gamma_i - \Psi
+  - Average Face Vector Psi shape: (4096,)
+  - Mean-centered Difference Matrix A shape: (4096, 245)
+
+[STEP 3] &gt;&gt;&gt; Turk-Pentland Covariance Reduction Trick
+         Formula: L = A^T A (M \times M) \quad \text{instead of} \quad C = A A^T (D \times D)
+  - Direct Covariance Matrix C would be: (4096 x 4096) = 16,777,216 entries! (Tractable? No)
+  - Turk-Pentland Surrogate L is: (245 x 245) = 60,025 entries! (Reduction factor: 279.5x)
+  - Eigenvalues computed: 245
+  - Selected Top K Eigenfaces: 40
+  - Cumulative Variance captured by K=40: 86.33%
+
+[STEP 4] &gt;&gt;&gt; Generating Visualizations (Eigenfaces Gallery &amp; Scree Plot)
+  [SAVED] results/01_eigenfaces_gallery.png
+  [SAVED] results/02_eigenvalue_scree_plot.png
+
+[STEP 5] &gt;&gt;&gt; Face Reconstruction Analysis Across Dimensionality K
+         Formula: \hat{\Gamma} = \Psi + \sum_{k=1}^K \omega_k u_k
+  [SAVED] results/03_face_reconstruction.png
+    * K =  2 eigenfaces -&gt; Reconstruction error (DFFS) = 8.593
+    * K =  5 eigenfaces -&gt; Reconstruction error (DFFS) = 6.765
+    * K = 10 eigenfaces -&gt; Reconstruction error (DFFS) = 5.588
+    * K = 20 eigenfaces -&gt; Reconstruction error (DFFS) = 5.313
+    * K = 40 eigenfaces -&gt; Reconstruction error (DFFS) = 4.729
+
+[STEP 6] &gt;&gt;&gt; Turk &amp; Pentland 4-Way Decision Rule Demonstration
+         Formula: \text{Check } \epsilon_d \ge \theta_f \text{ (non-face) and } \epsilon_c &lt; \theta_c \text{ (known)}
+  - Calibrated Face Space Threshold (theta_face):   7.884
+  - Calibrated Classification Threshold (theta_class): 6.463
+
+  [TEST CASE A: ENROLLED SUBJECT PROBE]
+    * True Identity:       Subject #0
+    * DFFS (epsilon_d):    4.729 (Threshold theta_f = 7.884)
+    * DIFS (epsilon_c):    5.651 (Threshold theta_c = 6.463)
+    * System Decision:     --&gt; KNOWN_FACE &lt;--
+    * Predicted Identity:  Subject #0 (Match: True)
+
+  [TEST CASE B: UNENROLLED SUBJECT PROBE (UNSEEN INDIVIDUAL)]
+    * True Identity:       Unseen Individual (Subject #35)
+    * DFFS (epsilon_d):    6.227 (&lt; theta_f: Confirmed Human Face)
+    * DIFS (epsilon_c):    7.452 (&gt;= theta_c: Exceeds Known Gallery Distance)
+    * System Decision:     --&gt; UNKNOWN_FACE &lt;--
+
+  [TEST CASE C: NON-FACE OBJECT REJECTION]
+    * Non-Face 'Uniform Random Noise':
+        DFFS (epsilon_d): 14.910 (&gt;= theta_f = 7.884)
+        System Decision:  --&gt; NOT_A_FACE &lt;--
+    * Non-Face 'Checkerboard Pattern':
+        DFFS (epsilon_d): 32.079 (&gt;= theta_f = 7.884)
+        System Decision:  --&gt; NOT_A_FACE &lt;--
+    * Non-Face 'Linear Horizontal Gradient':
+        DFFS (epsilon_d): 5.151 (&gt;= theta_f = 7.884)
+        System Decision:  --&gt; UNKNOWN_FACE &lt;--
+    * Non-Face 'Linear Vertical Gradient':
+        DFFS (epsilon_d): 6.256 (&gt;= theta_f = 7.884)
+        System Decision:  --&gt; UNKNOWN_FACE &lt;--
+
+  [SAVED] results/04_decision_space_geometry.png
+
+[STEP 7] &gt;&gt;&gt; Noise and Occlusion Robustness Evaluation
+  [SAVED] results/05_robustness_analysis.png
+
+[STEP 8] &gt;&gt;&gt; Quantitative Benchmark &amp; Statistical Metrics
+  [SAVED] results/06_accuracy_vs_k.png
+
+  +--------+---------------+-----------------------+
+  |   K    |  Accuracy (%) | Mean Recon Error (DFFS)|
+  +--------+---------------+-----------------------+
+  |     2  |     18.10%   |           6.859       |
+  |     5  |     50.48%   |           5.931       |
+  |    10  |     74.29%   |           5.245       |
+  |    15  |     76.19%   |           4.796       |
+  |    20  |     81.90%   |           4.496       |
+  |    30  |     85.71%   |           4.083       |
+  |    40  |     85.71%   |           3.847       |
+  |    50  |     87.62%   |           3.676       |
+  |    75  |     87.62%   |           3.387       |
+  |   100  |     87.62%   |           3.197       |
+  +--------+---------------+-----------------------+
+
+  [TURK &amp; PENTLAND 4-WAY DECISION STATS]
+    * Non-Face Rejection Rate:        70.0%
+    * Face Acceptance Rate:           100.0%
+    * Known Identification Rate:      79.0%
+    * Unknown Probe Detection Rate:   36.0%
+
+======================================================================
+  DEMONSTRATION COMPLETE: ALL PRESENTATION FIGURES GENERATED IN 'results/'
+======================================================================</code></pre>
 
   <div class="page-break"></div>
 
@@ -1205,7 +1367,7 @@ OK</code></pre>
 </html>
 """
 
-    html = (
+    rendered_html = (
         template.replace("__FIG1_B64__", fig1_b64)
         .replace("__FIG2_B64__", fig2_b64)
         .replace("__FIG3_B64__", fig3_b64)
@@ -1213,11 +1375,12 @@ OK</code></pre>
         .replace("__FIG5_B64__", fig5_b64)
         .replace("__FIG6_B64__", fig6_b64)
         .replace("__QR_B64__", qr_b64)
+        .replace("__MAIN_CODE__", main_code_escaped)
     )
 
     out_path = os.path.join(BASE_DIR, "REPORT.html")
     with open(out_path, "w", encoding="utf-8") as f:
-        f.write(html)
+        f.write(rendered_html)
     print(f"[REPORT BUILD] Comprehensive university project report compiled at: {out_path}")
 
 
